@@ -2,22 +2,34 @@ import uuid
 from datetime import UTC, date, datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.deps import get_workspace
 from app.models import Task, TaskStatus, Workspace
-from app.schemas import TaskCreate, TaskOut, TaskUpdate
+from app.schemas import (
+    DayOut,
+    DelaySuggestionOut,
+    HeavyLoadOut,
+    ScheduledTaskOut,
+    TaskCreate,
+    TaskOut,
+    TaskUpdate,
+    TodayOut,
+    WeekOut,
+)
 from app.services.priority import compute_priority
+from app.services.schedule import ACTIVE_STATUSES, Bucket, ScoredTask, build_today, build_week
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 DbSession = Annotated[Session, Depends(get_db)]
 CurrentWorkspace = Annotated[Workspace, Depends(get_workspace)]
-
-ACTIVE_STATUSES = (TaskStatus.TODO, TaskStatus.IN_PROGRESS)
+# The user's local date (Q1). Without it the server date is used, which can be a day off
+# for users in another timezone; the frontend always sends it.
+UserToday = Annotated[date | None, Query()]
 
 
 def _apply_priority(task: Task) -> None:
@@ -67,6 +79,74 @@ def list_tasks(
     if status is not None:
         query = query.where(Task.status == status)
     return list(db.scalars(query.order_by(Task.created_at, Task.id)))
+
+
+# --- schedule (CP9). Declared before /{task_id} so "today" and "week" are not read as ids. ---
+
+
+def _active_tasks(db: Session, workspace: Workspace) -> list[Task]:
+    return list(
+        db.scalars(
+            select(Task).where(Task.workspace_id == workspace.id, Task.status.in_(ACTIVE_STATUSES))
+        )
+    )
+
+
+def _scheduled(item: ScoredTask) -> ScheduledTaskOut:
+    base = TaskOut.model_validate(item.task).model_dump()
+    base.update(
+        urgency_score=item.priority.urgency,
+        priority_score=item.priority.score,
+        priority_label=item.priority.label,
+    )
+    return ScheduledTaskOut(**base, reasons=item.priority.reasons)
+
+
+def _day(day: date | None, bucket: Bucket) -> DayOut:
+    return DayOut(
+        date=day,
+        total_minutes=bucket.total_minutes,
+        task_count=len(bucket.tasks),
+        is_heavy=bucket.is_heavy,
+        tasks=[_scheduled(item) for item in bucket.tasks],
+    )
+
+
+@router.get("/today", response_model=TodayOut)
+def today_schedule(db: DbSession, workspace: CurrentWorkspace, today: UserToday = None) -> TodayOut:
+    today = today or date.today()
+    result = build_today(_active_tasks(db, workspace), today)
+    load, suggestion = result.heavy_load, result.delay_suggestion
+    return TodayOut(
+        today=today,
+        top=[_scheduled(item) for item in result.top],
+        rest=[_scheduled(item) for item in result.rest],
+        heavy_load=HeavyLoadOut(
+            reason=load.reason,
+            total_minutes=load.total_minutes,
+            capacity_minutes=load.capacity_minutes,
+        )
+        if load
+        else None,
+        delay_suggestion=DelaySuggestionOut(
+            task_id=suggestion.id,
+            reason="past_its_date" if suggestion.due_date < today else "lowest_priority",
+        )
+        if suggestion
+        else None,
+    )
+
+
+@router.get("/week", response_model=WeekOut)
+def week_schedule(db: DbSession, workspace: CurrentWorkspace, today: UserToday = None) -> WeekOut:
+    today = today or date.today()
+    result = build_week(_active_tasks(db, workspace), today)
+    return WeekOut(
+        today=today,
+        capacity_minutes=result.capacity_minutes,
+        days=[_day(day, bucket) for day, bucket in result.days],
+        unscheduled=_day(None, result.unscheduled),
+    )
 
 
 @router.get("/{task_id}", response_model=TaskOut)

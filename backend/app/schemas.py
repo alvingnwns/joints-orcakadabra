@@ -2,7 +2,7 @@
 
 import uuid
 from datetime import date, datetime
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
 
@@ -70,3 +70,51 @@ class TaskOut(BaseModel):
     created_at: datetime
     updated_at: datetime
     completed_at: datetime | None
+
+
+# --- schedule (CP9) ---
+
+
+class ScheduledTaskOut(TaskOut):
+    """A task with scores computed for the user's `today`, plus short English reasons.
+
+    The reasons are context for the AI chat (CP14); the UI uses its own dictionaries.
+    """
+
+    reasons: list[str]
+
+
+class HeavyLoadOut(BaseModel):
+    is_heavy: bool = True
+    # A code, not a sentence, so the frontend can show it in the user's language.
+    reason: Literal["over_capacity", "many_long_tasks"]
+    total_minutes: int
+    capacity_minutes: int
+
+
+class DelaySuggestionOut(BaseModel):
+    task_id: uuid.UUID
+    reason: Literal["past_its_date", "lowest_priority"]
+
+
+class TodayOut(BaseModel):
+    today: date
+    top: list[ScheduledTaskOut]
+    rest: list[ScheduledTaskOut]
+    heavy_load: HeavyLoadOut | None
+    delay_suggestion: DelaySuggestionOut | None
+
+
+class DayOut(BaseModel):
+    date: date | None  # None for the "unscheduled" bucket
+    total_minutes: int
+    task_count: int
+    is_heavy: bool
+    tasks: list[ScheduledTaskOut]
+
+
+class WeekOut(BaseModel):
+    today: date
+    capacity_minutes: int
+    days: list[DayOut]
+    unscheduled: DayOut
