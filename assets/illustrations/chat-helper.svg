@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-labelledby="title">
+  <title id="title">An orca with a speech bubble, ready to answer schedule questions</title>
+  <!-- Placeholder illustration: replace with final artwork, keep viewBox 240x180 -->
+  <ellipse cx="120" cy="100" rx="105" ry="70" fill="#FFF4E6"/>
+  <g transform="translate(36 78)">
+    <path d="M58 12 L64 -10 L76 14 Z" fill="#2B3A55"/>
+    <path d="M14 40 C4 34 -4 28 -10 18 C-5 32 -6 46 -12 58 C-2 52 6 47 14 44 Z" fill="#2B3A55"/>
+    <path d="M10 40 C10 15 45 4 70 11 C90 17 100 30 100 43 C100 59 76 67 52 67 C26 67 10 57 10 40 Z" fill="#2B3A55"/>
+    <path d="M32 54 C48 63 78 62 96 48 C90 61 72 66 52 66 C42 66 35 61 32 54 Z" fill="#FFFFFF"/>
+    <ellipse cx="78" cy="29" rx="8" ry="4.5" fill="#FFFFFF"/>
+    <circle cx="80" cy="30" r="2.4" fill="#2B3A55"/>
+    <circle cx="88" cy="40" r="3.5" fill="#F28C7A" opacity="0.7"/>
+    <path d="M86 47 Q91 51 96 46" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+  <path d="M146 30 h56 a12 12 0 0 1 12 12 v28 a12 12 0 0 1 -12 12 h-36 l-14 14 v-14 h-6 a12 12 0 0 1 -12 -12 v-28 a12 12 0 0 1 12 -12 Z"
+        fill="#FFFFFF" stroke="#2B3A55" stroke-width="3" stroke-linejoin="round"/>
+  <circle cx="160" cy="56" r="4.5" fill="#FDBA8C"/>
+  <circle cx="174" cy="56" r="4.5" fill="#9CC5A1"/>
+  <circle cx="188" cy="56" r="4.5" fill="#A9CFE8"/>
+</svg>
