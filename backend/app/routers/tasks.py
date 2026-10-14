@@ -1,5 +1,5 @@
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Response
@@ -10,11 +10,33 @@ from app.db import get_db
 from app.deps import get_workspace
 from app.models import Task, TaskStatus, Workspace
 from app.schemas import TaskCreate, TaskOut, TaskUpdate
+from app.services.priority import compute_priority
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 DbSession = Annotated[Session, Depends(get_db)]
 CurrentWorkspace = Annotated[Workspace, Depends(get_workspace)]
+
+ACTIVE_STATUSES = (TaskStatus.TODO, TaskStatus.IN_PROGRESS)
+
+
+def _apply_priority(task: Task) -> None:
+    """Writes the scores onto the task (C4). Done and deferred tasks are not scored.
+
+    "Today" is the server date here; the schedule endpoints (CP9) take the user's local date.
+    """
+    if task.status not in ACTIVE_STATUSES:
+        task.urgency_score = task.priority_score = task.priority_label = None
+        return
+    result = compute_priority(
+        due_date=task.due_date,
+        impact_score=task.impact_score,
+        estimated_minutes=task.estimated_minutes,
+        today=date.today(),
+    )
+    task.urgency_score = result.urgency
+    task.priority_score = result.score
+    task.priority_label = result.label
 
 
 def _get_task(db: Session, workspace: Workspace, task_id: uuid.UUID) -> Task:
@@ -29,7 +51,8 @@ def _get_task(db: Session, workspace: Workspace, task_id: uuid.UUID) -> Task:
 
 @router.post("", response_model=TaskOut, status_code=201)
 def create_task(body: TaskCreate, db: DbSession, workspace: CurrentWorkspace) -> Task:
-    task = Task(workspace_id=workspace.id, **body.model_dump())
+    task = Task(workspace_id=workspace.id, status=TaskStatus.TODO, **body.model_dump())
+    _apply_priority(task)
     db.add(task)
     db.commit()
     db.refresh(task)
@@ -68,6 +91,7 @@ def update_task(
 
     for field, value in changes.items():
         setattr(task, field, value)
+    _apply_priority(task)
     db.commit()
     db.refresh(task)  # updated_at is set by the database
     return task
