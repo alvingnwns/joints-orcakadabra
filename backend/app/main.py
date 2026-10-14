@@ -3,10 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from app.config import get_settings
-from app.routers import workspaces
+from app.routers import tasks, workspaces
 
 app = FastAPI(title="joints-orcakadabra API")
 app.include_router(workspaces.router)
+app.include_router(tasks.router)
 
 # Only the configured frontend origins (CORS_ORIGINS) may call the API from a browser.
 app.add_middleware(
