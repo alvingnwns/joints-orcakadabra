@@ -19,7 +19,7 @@ export function AboutDialog() {
         type="button"
         aria-haspopup="dialog"
         onClick={() => dialogRef.current?.showModal()}
-        className="min-h-11 rounded-full border border-line px-4 text-sm font-medium hover:bg-cream"
+        className="min-h-11 rounded-full border border-muted px-4 text-sm font-medium hover:bg-cream"
       >
         {t("aboutButton")}
       </button>

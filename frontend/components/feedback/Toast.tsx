@@ -37,6 +37,7 @@ export function Toast({ toast, onUndo, onDismiss }: Props) {
           {toast.undo && (
             <button
               type="button"
+              data-toast-focus
               onClick={onUndo}
               className="min-h-11 rounded-full border border-cream px-4 text-sm font-medium hover:bg-cream hover:text-ink"
             >
@@ -45,6 +46,7 @@ export function Toast({ toast, onUndo, onDismiss }: Props) {
           )}
           <button
             type="button"
+            {...(!toast.undo && { "data-toast-focus": true })}
             onClick={onDismiss}
             className="min-h-11 min-w-11 rounded-full text-lg leading-none hover:bg-cream hover:text-ink"
           >

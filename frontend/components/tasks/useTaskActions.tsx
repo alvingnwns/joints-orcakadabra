@@ -39,6 +39,22 @@ export function useTaskActions(refresh: () => Promise<void>) {
     }
     setToast(next);
     await refresh();
+    keepFocus();
+  }
+
+  /**
+   * An action can move or remove the focused task (e.g. "Move it", "Later", delete), which
+   * drops keyboard focus to <body>. Put it on the toast's first button instead, so keyboard
+   * users keep their place and can undo right away; without a toast, use the main area.
+   */
+  function keepFocus() {
+    requestAnimationFrame(() => {
+      if (document.activeElement !== document.body) return;
+      const target =
+        document.querySelector<HTMLElement>("[data-toast-focus]") ??
+        document.getElementById("main");
+      target?.focus();
+    });
   }
 
   /** Brings a deleted task back as a new task with the same details. */

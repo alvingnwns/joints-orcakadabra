@@ -5,7 +5,7 @@ import { useId } from "react";
 import { useT } from "@/components/LocaleProvider";
 import type { Draft } from "@/lib/dump";
 
-const inputClass = "mt-1 min-h-11 w-full rounded-xl border border-line bg-surface px-3";
+const inputClass = "mt-1 min-h-11 w-full rounded-xl border border-muted bg-surface px-3";
 
 type Props = {
   draft: Draft;

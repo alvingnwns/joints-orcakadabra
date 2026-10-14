@@ -159,7 +159,7 @@ export function ChatPanel({ children }: { children: ReactNode }) {
                 value={question}
                 maxLength={MAX_QUESTION_LENGTH}
                 onChange={(event) => setQuestion(event.target.value)}
-                className="min-h-11 w-full rounded-xl border border-line bg-surface px-3"
+                className="min-h-11 w-full rounded-xl border border-muted bg-surface px-3"
               />
               <button
                 type="submit"

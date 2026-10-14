@@ -13,7 +13,7 @@ type Mode = "closed" | "menu" | "pickDay" | "smaller";
 
 const buttonClass =
   "min-h-11 rounded-full border border-ink px-4 text-sm font-medium hover:bg-cream disabled:opacity-50";
-const inputClass = "mt-1 min-h-11 w-full rounded-xl border border-line bg-surface px-3";
+const inputClass = "mt-1 min-h-11 w-full rounded-xl border border-muted bg-surface px-3";
 
 /** Ways to change plans without guilt: move, save for later, or make a task smaller (CP8). */
 export function TaskActions({ task, onUpdate }: Props) {

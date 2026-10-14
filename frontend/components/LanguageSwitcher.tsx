@@ -17,7 +17,7 @@ export function LanguageSwitcher() {
         onChange={(event) => {
           if (isLocale(event.target.value)) setLocale(event.target.value);
         }}
-        className="min-h-11 rounded-full border border-line bg-surface px-3"
+        className="min-h-11 rounded-full border border-muted bg-surface px-3"
       >
         {(Object.keys(dictionaries) as Locale[]).map((code) => (
           <option key={code} value={code}>

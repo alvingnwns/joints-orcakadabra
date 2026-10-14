@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -181,6 +181,17 @@ describe("TodayView", () => {
       due_date: "2026-10-20",
       estimated_minutes: 90,
     });
+  });
+
+  it("keeps keyboard focus on Undo when the task moves away", async () => {
+    fakeBackend([task("a", "Open")]);
+    renderView();
+
+    await userEvent.click(await screen.findByRole("button", { name: "Change plans" }));
+    await userEvent.click(screen.getByRole("button", { name: "Not today, save for later" }));
+
+    // The task left "Start here" (its buttons are gone), so focus moves to the toast.
+    await waitFor(() => expect(screen.getByRole("button", { name: "Undo" })).toHaveFocus());
   });
 
   it("closes the toast with the close button", async () => {

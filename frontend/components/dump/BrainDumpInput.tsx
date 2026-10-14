@@ -39,7 +39,7 @@ export function BrainDumpInput({ text, onChange, onSubmit, busy }: Props) {
         maxLength={MAX_DUMP_LENGTH}
         rows={8}
         readOnly={busy}
-        className="mt-3 w-full rounded-xl border border-line bg-surface p-3"
+        className="mt-3 w-full rounded-xl border border-muted bg-surface p-3"
       />
       <button
         type="submit"

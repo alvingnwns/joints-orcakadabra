@@ -12,7 +12,7 @@ const IMPACT_CHOICES = [
   { value: 5, label: "impactReally" },
 ] as const;
 
-const inputClass = "min-h-11 w-full rounded-xl border border-line bg-surface px-3";
+const inputClass = "min-h-11 w-full rounded-xl border border-muted bg-surface px-3";
 
 type Props = {
   /** Should reject if the task could not be saved, so the form can keep what was typed. */
@@ -117,7 +117,7 @@ export function QuickAddForm({ onAdd }: Props) {
               {IMPACT_CHOICES.map((choice) => (
                 <label
                   key={choice.value}
-                  className="flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-line px-4 has-[:checked]:border-ink has-[:checked]:bg-sky"
+                  className="flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-muted px-4 has-[:checked]:border-ink has-[:checked]:bg-sky"
                 >
                   <input
                     type="radio"
