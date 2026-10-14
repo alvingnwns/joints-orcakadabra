@@ -2,12 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { useT } from "@/components/LocaleProvider";
 import { apiFetch } from "@/lib/api";
 
 type Status = "checking" | "ok" | "error";
 
 /** Shows a gentle notice while the backend is unreachable. Renders nothing once it is up. */
 export function ConnectionBanner() {
+  const t = useT();
   const [status, setStatus] = useState<Status>("checking");
 
   const check = useCallback(async () => {
@@ -29,17 +31,17 @@ export function ConnectionBanner() {
   return (
     <div role="status" aria-live="polite">
       {status === "checking" && (
-        <p className="px-4 py-2 text-center text-sm text-muted">Connecting…</p>
+        <p className="px-4 py-2 text-center text-sm text-muted">{t("connecting")}</p>
       )}
       {status === "error" && (
         <div className="flex flex-wrap items-center justify-center gap-3 bg-peach px-4 py-3 text-sm">
-          <p>We can&apos;t reach the server right now. Nothing is lost, so try again in a moment.</p>
+          <p>{t("serverUnreachable")}</p>
           <button
             type="button"
             onClick={() => void check()}
-            className="rounded-full border border-ink px-4 py-1.5 font-medium hover:bg-surface"
+            className="min-h-11 rounded-full border border-ink px-4 font-medium hover:bg-surface"
           >
-            Try again
+            {t("tryAgain")}
           </button>
         </div>
       )}
