@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { AboutDialog } from "@/components/AboutDialog";
+import { ChatPanel } from "@/components/chat/ChatPanel";
 import { ConnectionBanner } from "@/components/ConnectionBanner";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useT } from "@/components/LocaleProvider";
@@ -62,8 +63,10 @@ export function AppShell({ children }: { children: ReactNode }) {
         </nav>
       </header>
       <ConnectionBanner />
-      <main id="main" tabIndex={-1} className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">
-        <WorkspaceProvider>{children}</WorkspaceProvider>
+      <main id="main" tabIndex={-1} className="mx-auto w-full max-w-3xl flex-1 px-4 pt-8 pb-24">
+        <WorkspaceProvider>
+          <ChatPanel>{children}</ChatPanel>
+        </WorkspaceProvider>
       </main>
     </>
   );

@@ -105,6 +105,21 @@ export const en = {
   draftsSaveError: "We couldn't save these just yet. Your drafts are still here, so try again.",
   draftsSaved: "Saved. Your tasks are on your list.",
   draftsSeeToday: "See today",
+
+  chatOpen: "Ask about my schedule",
+  chatTitle: "Schedule helper",
+  chatCaption: "Answers are based on your schedule.",
+  chatEmpty: "Ask anything about your tasks, or pick one of these:",
+  chatSuggestFirst: "What should I do first?",
+  chatSuggestTwoHours: "I only have 2 hours",
+  chatSuggestWait: "What can wait?",
+  chatInputLabel: "Your question",
+  chatSend: "Ask",
+  chatThinking: "Thinking…",
+  chatError: "The helper couldn't answer just now. Your schedule is still fine.",
+  chatYou: "You",
+  chatHelper: "Helper",
+  chatWhy: "Why is this here?",
 };
 
 export type TranslationKey = keyof typeof en;

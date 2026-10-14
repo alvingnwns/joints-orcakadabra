@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { type ReactNode, useId, useState } from "react";
 
 import { useLocale } from "@/components/LocaleProvider";
 import { formatDate } from "@/lib/i18n";
@@ -15,11 +15,20 @@ type Props = {
   onUpdate: UpdateTask;
   /** The first "Start here" card stands out a little. */
   emphasis?: boolean;
+  /** Extra controls shown below the actions, e.g. "Why is this here?". */
+  children?: ReactNode;
 };
 
 const buttonClass = "min-h-11 rounded-full border border-ink px-4 text-sm font-medium hover:bg-cream";
 
-export function TaskItem({ task, onToggle, onDelete, onUpdate, emphasis = false }: Props) {
+export function TaskItem({
+  task,
+  onToggle,
+  onDelete,
+  onUpdate,
+  emphasis = false,
+  children,
+}: Props) {
   const { t, locale } = useLocale();
   const titleId = useId();
   const [confirming, setConfirming] = useState(false);
@@ -63,6 +72,7 @@ export function TaskItem({ task, onToggle, onDelete, onUpdate, emphasis = false 
       </div>
 
       <TaskActions task={task} onUpdate={onUpdate} />
+      {children}
 
       {confirming && (
         <div role="group" aria-label={t("deleteConfirm")} className="mt-3 rounded-xl bg-peach p-3">
