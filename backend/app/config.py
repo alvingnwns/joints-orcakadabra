@@ -9,7 +9,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     # Database (used from CP2). Local development defaults to the Docker Compose Postgres.
-    database_url: str = "postgresql+psycopg://orca:orca@localhost:5432/orca"
+    # 127.0.0.1, not localhost: on Windows, localhost tries IPv6 first and stalls for minutes.
+    database_url: str = "postgresql+psycopg://orca:orca@127.0.0.1:5432/orca"
 
     # Comma-separated list of allowed browser origins (wired up in CP3).
     cors_origins: str = "http://localhost:3000"
