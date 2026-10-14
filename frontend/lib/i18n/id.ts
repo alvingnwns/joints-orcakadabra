@@ -12,10 +12,28 @@ export const id: Dictionary = {
   workspaceLoading: "Menyiapkan ruangmu…",
   workspaceError: "Kami belum bisa menyiapkan ruangmu. Tidak ada yang hilang. Silakan coba lagi.",
 
-  tasksTitle: "Tugasmu",
-  tasksLoading: "Memuat tugasmu…",
-  tasksLoadError: "Kami belum bisa memuat tugasmu sekarang. Tidak ada yang hilang.",
-  tasksEmpty: "Belum ada apa-apa — tambahkan satu hal kecil.",
+  aboutButton: "Tentang",
+  aboutTitle: "Tentang aplikasi ini",
+  aboutBody:
+    "Orca membantumu melihat satu langkah berikutnya dengan jelas. Memindahkan, mengecilkan, atau melewati tugas selalu boleh.",
+  aboutPrivacy:
+    "Fitur AI mengirim teks yang kamu ketik ke penyedia AI pihak ketiga, jadi hindari memasukkan data pribadi yang sensitif.",
+  close: "Tutup",
+
+  todayTitle: "Hari ini",
+  todayLoading: "Memuat harimu…",
+  todayLoadError: "Kami belum bisa memuat harimu sekarang. Tidak ada yang hilang.",
+  startHere: "Mulai dari sini",
+  alsoToday: "Juga hari ini",
+  dayClear: "Harimu kosong. Tambahkan satu hal kecil kalau mau — atau nikmati saja.",
+  allDone: "Semua untuk hari ini sudah selesai. Kerja bagus — istirahat juga bagian dari rencana.",
+  doneTodayTitle: "Selesai hari ini",
+  heavyLoadTitle: "Hari yang padat",
+  heavyOverCapacity:
+    "Hari ini berisi lebih dari satu hari yang nyaman. Tidak apa-apa memindahkan sesuatu.",
+  heavyLongTasks: "Hari ini ada beberapa tugas panjang. Tidak apa-apa memindahkan satu.",
+  delaySuggestion: "Yang ini bisa menunggu sampai besok:",
+  moveIt: "Pindahkan",
   taskActionError: "Itu belum berhasil. Silakan coba lagi.",
 
   addTaskLabel: "Apa satu hal yang perlu dilakukan?",
@@ -52,4 +70,17 @@ export const id: Dictionary = {
   broughtBack: "Sudah kembali ke daftarmu.",
   madeSmaller: "Sudah dibuat lebih kecil. Langkah kecil tetap berarti.",
   laterTitle: "Nanti",
+
+  navLabel: "Utama",
+  navWeek: "Minggu ini",
+  weekTitle: "Minggumu",
+  weekLoading: "Memuat minggumu…",
+  weekLoadError: "Kami belum bisa memuat minggumu sekarang. Tidak ada yang hilang.",
+  weekEmpty: "Minggumu masih lapang. Belum ada rencana.",
+  loadNone: "Belum ada rencana",
+  loadLight: "Masih longgar",
+  loadBusy: "Cukup sibuk",
+  loadFull: "Hari penuh",
+  unscheduledTitle: "Belum ada tanggal",
+  dayEmpty: "Belum ada rencana untuk hari tersebut.",
 };

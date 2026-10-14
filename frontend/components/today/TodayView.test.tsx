@@ -1,0 +1,169 @@
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { WorkspaceProvider } from "@/components/WorkspaceProvider";
+import type { HeavyLoad } from "@/lib/schedule";
+import { type Task, localDate } from "@/lib/tasks";
+
+import { TodayView } from "./TodayView";
+
+const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
+
+const task = (id: string, title: string, extra: Partial<Task> = {}): Task => ({
+  id,
+  title,
+  due_date: null,
+  estimated_minutes: null,
+  impact_score: 3,
+  status: "todo",
+  completed_at: null,
+  ...extra,
+});
+
+type Options = { heavy?: HeavyLoad; suggest?: string; failToday?: number; failPatch?: boolean };
+
+/**
+ * In-memory backend. /tasks/today keeps the list order (ranking itself is tested in the backend):
+ * the first 3 active tasks are the top, the others are the rest.
+ */
+function fakeBackend(initial: Task[], options: Options = {}) {
+  const tasks = initial.map((item) => ({ ...item }));
+  let todayFailures = options.failToday ?? 0;
+  const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+    const { pathname, searchParams } = new URL(url);
+    const method = init?.method ?? "GET";
+    if (pathname === "/workspaces") return json({ id: "ws1" }, 201);
+    if (pathname === "/tasks/today") {
+      if (todayFailures-- > 0) throw new TypeError("Failed to fetch");
+      const active = tasks.filter((item) => item.status === "todo");
+      return json({
+        today: searchParams.get("today"),
+        top: active.slice(0, 3),
+        rest: active.slice(3),
+        heavy_load: options.heavy ?? null,
+        delay_suggestion: options.suggest
+          ? { task_id: options.suggest, reason: "lowest_priority" }
+          : null,
+      });
+    }
+    if (pathname === "/tasks" && method === "GET") return json(tasks);
+    if (pathname === "/tasks" && method === "POST") {
+      const created = task(`t${tasks.length + 1}`, JSON.parse(init?.body as string).title);
+      tasks.push(created);
+      return json(created, 201);
+    }
+    const found = tasks.find((item) => pathname === `/tasks/${item.id}`)!;
+    if (method === "PATCH") {
+      if (options.failPatch) return json({ detail: "nope" }, 500);
+      const changes = JSON.parse(init?.body as string);
+      if (changes.status === "done") changes.completed_at = new Date().toISOString();
+      return json(Object.assign(found, changes));
+    }
+    tasks.splice(tasks.indexOf(found), 1);
+    return new Response(null, { status: 204 });
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
+}
+
+function renderView() {
+  render(
+    <WorkspaceProvider>
+      <TodayView />
+    </WorkspaceProvider>,
+  );
+}
+
+const heavy: HeavyLoad = {
+  is_heavy: true,
+  reason: "over_capacity",
+  total_minutes: 300,
+  capacity_minutes: 240,
+};
+
+describe("TodayView", () => {
+  beforeEach(() => localStorage.clear());
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("shows a clear day, then the new task after adding one", async () => {
+    const fetchMock = fakeBackend([]);
+    renderView();
+
+    expect(await screen.findByText(/Your day is clear/)).toBeInTheDocument();
+    const todayCall = fetchMock.mock.calls.find(([url]) => url.includes("/tasks/today"))!;
+    expect(todayCall[0]).toContain(`today=${localDate(0)}`); // the user's local date
+
+    await userEvent.type(screen.getByLabelText("What's one thing to do?"), "Buy milk");
+    await userEvent.click(screen.getByRole("button", { name: "Add" }));
+
+    expect(await screen.findByRole("heading", { name: "Start here" })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Buy milk/)).toBeInTheDocument();
+  });
+
+  it("shows the top 3 under 'Start here' and the others under 'Also today'", async () => {
+    fakeBackend([task("a", "First"), task("b", "Second"), task("c", "Third"), task("d", "Fourth")]);
+    renderView();
+
+    const startHere = (await screen.findByRole("heading", { name: "Start here" })).parentElement!;
+    const alsoToday = screen.getByRole("heading", { name: "Also today" }).parentElement!;
+    expect(startHere).toHaveTextContent(/First.*Second.*Third/);
+    expect(startHere).not.toHaveTextContent("Fourth");
+    expect(alsoToday).toHaveTextContent("Fourth");
+  });
+
+  it("refreshes the top 3 after marking one done, and celebrates an all-done day", async () => {
+    fakeBackend([task("a", "Only one")]);
+    renderView();
+
+    await userEvent.click(await screen.findByLabelText(/Only one/));
+
+    expect(await screen.findByText(/That's everything for today/)).toBeInTheDocument();
+    expect(screen.getByText("Done today (1)")).toBeInTheDocument();
+  });
+
+  it("shows the heavy-load notice with a suggestion, and 'Move it' moves it to tomorrow", async () => {
+    const fetchMock = fakeBackend([task("a", "Big"), task("b", "Small deal")], {
+      heavy,
+      suggest: "b",
+    });
+    renderView();
+
+    const notice = (await screen.findByRole("heading", { name: "A full day" })).parentElement!;
+    expect(notice).toHaveTextContent("Small deal");
+
+    await userEvent.click(screen.getByRole("button", { name: "Move it" }));
+
+    expect(await screen.findByText(/Moved to tomorrow/)).toBeInTheDocument();
+    const patch = fetchMock.mock.calls.find(([, init]) => init?.method === "PATCH")!;
+    expect(patch[0]).toContain("/tasks/b");
+    expect(JSON.parse(patch[1]!.body as string)).toEqual({ due_date: localDate(1) });
+  });
+
+  it("lists tasks saved for later in the Later list", async () => {
+    fakeBackend([task("a", "Open"), task("b", "Someday", { status: "deferred" })]);
+    renderView();
+
+    expect(await screen.findByText("Later (1)")).toBeInTheDocument();
+  });
+
+  it("keeps the screen as it was and shows a calm error when an action fails", async () => {
+    fakeBackend([task("a", "Open")], { failPatch: true });
+    renderView();
+
+    await userEvent.click(await screen.findByLabelText(/Open/));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("That didn't go through.");
+    expect(screen.getByLabelText(/Open/)).not.toBeChecked();
+  });
+
+  it("shows a calm error with retry when the day cannot be loaded", async () => {
+    fakeBackend([task("a", "Open")], { failToday: 1 });
+    renderView();
+
+    expect(await screen.findByText(/couldn't load your day/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+
+    expect(await screen.findByLabelText(/Open/)).toBeInTheDocument();
+  });
+});

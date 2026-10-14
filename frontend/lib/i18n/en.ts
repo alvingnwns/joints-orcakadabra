@@ -11,10 +11,27 @@ export const en = {
   workspaceLoading: "Getting your space ready…",
   workspaceError: "We couldn't set up your space just yet. Nothing is lost. Please try again.",
 
-  tasksTitle: "Your tasks",
-  tasksLoading: "Loading your tasks…",
-  tasksLoadError: "We couldn't load your tasks right now. Nothing is lost.",
-  tasksEmpty: "Nothing here yet — add one small thing.",
+  aboutButton: "About",
+  aboutTitle: "About this app",
+  aboutBody:
+    "Orca helps you see one clear next step. Moving, shrinking, or skipping a task is always fine.",
+  aboutPrivacy:
+    "AI features send the text you type to a third-party AI provider, so please avoid entering sensitive personal details.",
+  close: "Close",
+
+  todayTitle: "Today",
+  todayLoading: "Loading your day…",
+  todayLoadError: "We couldn't load your day right now. Nothing is lost.",
+  startHere: "Start here",
+  alsoToday: "Also today",
+  dayClear: "Your day is clear. Add one small thing if you like — or just enjoy it.",
+  allDone: "That's everything for today. Nice work — resting is part of the plan too.",
+  doneTodayTitle: "Done today",
+  heavyLoadTitle: "A full day",
+  heavyOverCapacity: "Today holds more than a comfortable day. It's okay to move something.",
+  heavyLongTasks: "Today has several long tasks. It's okay to move one.",
+  delaySuggestion: "This one could wait until tomorrow:",
+  moveIt: "Move it",
   taskActionError: "That didn't go through. Please try again.",
 
   addTaskLabel: "What's one thing to do?",
@@ -51,6 +68,19 @@ export const en = {
   broughtBack: "It's back on your list.",
   madeSmaller: "Made it smaller. Small steps count.",
   laterTitle: "Later",
+
+  navLabel: "Main",
+  navWeek: "Week",
+  weekTitle: "Your week",
+  weekLoading: "Loading your week…",
+  weekLoadError: "We couldn't load your week right now. Nothing is lost.",
+  weekEmpty: "Your week is wide open. Nothing planned yet.",
+  loadNone: "Nothing planned",
+  loadLight: "Room to breathe",
+  loadBusy: "Fairly busy",
+  loadFull: "Full day",
+  unscheduledTitle: "No date yet",
+  dayEmpty: "Nothing planned for that day.",
 };
 
 export type TranslationKey = keyof typeof en;

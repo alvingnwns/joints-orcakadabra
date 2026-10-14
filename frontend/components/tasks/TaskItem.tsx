@@ -13,18 +13,22 @@ type Props = {
   onToggle: (task: Task) => void;
   onDelete: (task: Task) => void;
   onUpdate: UpdateTask;
+  /** The first "Start here" card stands out a little. */
+  emphasis?: boolean;
 };
 
 const buttonClass = "min-h-11 rounded-full border border-ink px-4 text-sm font-medium hover:bg-cream";
 
-export function TaskItem({ task, onToggle, onDelete, onUpdate }: Props) {
+export function TaskItem({ task, onToggle, onDelete, onUpdate, emphasis = false }: Props) {
   const { t, locale } = useLocale();
   const titleId = useId();
   const [confirming, setConfirming] = useState(false);
   const done = task.status === "done";
 
   return (
-    <li className="rounded-card bg-surface p-4 shadow-sm">
+    <li
+      className={`rounded-card bg-surface p-4 ${emphasis ? "shadow-md ring-2 ring-ink" : "shadow-sm"}`}
+    >
       <div className="flex items-start justify-between gap-3">
         <label className="flex min-h-11 flex-1 cursor-pointer items-start gap-3">
           <input

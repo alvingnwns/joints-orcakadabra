@@ -9,6 +9,7 @@ export type Task = {
   estimated_minutes: number | null;
   impact_score: number;
   status: TaskStatus;
+  completed_at?: string | null; // ISO timestamp
 };
 
 export type NewTask = {

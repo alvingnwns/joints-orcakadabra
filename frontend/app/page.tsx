@@ -1,5 +1,5 @@
-import { TasksView } from "@/components/tasks/TasksView";
+import { TodayView } from "@/components/today/TodayView";
 
 export default function Home() {
-  return <TasksView />;
+  return <TodayView />;
 }

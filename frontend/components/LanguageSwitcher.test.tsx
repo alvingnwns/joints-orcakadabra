@@ -8,7 +8,7 @@ import { LOCALE_STORAGE_KEY } from "@/lib/i18n";
 
 function Greeting() {
   const t = useT();
-  return <p>{t("tasksTitle")}</p>;
+  return <p>{t("todayTitle")}</p>;
 }
 
 function renderApp() {
@@ -26,11 +26,11 @@ describe("language switching", () => {
 
   it("switches all text, updates <html lang>, and remembers the choice", async () => {
     renderApp();
-    expect(screen.getByText("Your tasks")).toBeInTheDocument();
+    expect(screen.getByText("Today")).toBeInTheDocument();
 
     await userEvent.selectOptions(screen.getByLabelText("Language"), "id");
 
-    expect(screen.getByText("Tugasmu")).toBeInTheDocument();
+    expect(screen.getByText("Hari ini")).toBeInTheDocument();
     expect(screen.getByLabelText("Bahasa")).toBeInTheDocument();
     expect(document.documentElement.lang).toBe("id");
     expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe("id");
@@ -41,7 +41,7 @@ describe("language switching", () => {
 
     renderApp();
 
-    expect(await screen.findByText("Tugasmu")).toBeInTheDocument();
+    expect(await screen.findByText("Hari ini")).toBeInTheDocument();
     expect(document.documentElement.lang).toBe("id");
   });
 
@@ -50,7 +50,7 @@ describe("language switching", () => {
 
     renderApp();
 
-    expect(await screen.findByText("Tugasmu")).toBeInTheDocument();
+    expect(await screen.findByText("Hari ini")).toBeInTheDocument();
   });
 
   it("ignores an invalid saved value", async () => {
@@ -58,6 +58,6 @@ describe("language switching", () => {
 
     renderApp();
 
-    expect(screen.getByText("Your tasks")).toBeInTheDocument();
+    expect(screen.getByText("Today")).toBeInTheDocument();
   });
 });
