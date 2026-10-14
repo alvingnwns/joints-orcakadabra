@@ -12,4 +12,6 @@ export const id: Dictionary = {
   welcomeTitle: "Selamat datang",
   welcomeBody:
     "Tugas-tugasmu akan ada di sini sebentar lagi. Tidak perlu terburu-buru. Kita jalani satu langkah kecil pada satu waktu.",
+  workspaceLoading: "Menyiapkan ruangmu…",
+  workspaceError: "Kami belum bisa menyiapkan ruangmu. Tidak ada yang hilang. Silakan coba lagi.",
 };

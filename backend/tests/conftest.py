@@ -11,8 +11,12 @@ from pathlib import Path
 import pytest
 from alembic import command
 from alembic.config import Config
+from fastapi.testclient import TestClient
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session
+
+from app.db import get_db
+from app.main import app
 
 TEST_DATABASE_URL = os.environ.get(
     "TEST_DATABASE_URL", "postgresql+psycopg://orca:orca@127.0.0.1:5432/orca_test"
@@ -44,3 +48,11 @@ def db_session(db_engine: Engine) -> Iterator[Session]:
         session.close()
         transaction.rollback()
         connection.close()
+
+
+@pytest.fixture
+def client(db_session: Session) -> Iterator[TestClient]:
+    """API client whose requests use the rolled-back test session."""
+    app.dependency_overrides[get_db] = lambda: db_session
+    yield TestClient(app)
+    app.dependency_overrides.clear()

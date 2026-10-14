@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { ConnectionBanner } from "@/components/ConnectionBanner";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useT } from "@/components/LocaleProvider";
+import { WorkspaceProvider } from "@/components/WorkspaceProvider";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const t = useT();
@@ -28,7 +29,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>
       <ConnectionBanner />
       <main id="main" tabIndex={-1} className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">
-        {children}
+        <WorkspaceProvider>{children}</WorkspaceProvider>
       </main>
     </>
   );

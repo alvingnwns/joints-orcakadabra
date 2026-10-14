@@ -2,7 +2,7 @@
 
 FastAPI service for tasks, the deterministic priority engine, schedule generation, and LLM calls.
 
-Currently available (up to checkpoint CP2): `GET /health`, settings, the `workspaces` and `tasks` database tables with Alembic migrations, and the test setup.
+Currently available (up to checkpoint CP4): `GET /health`, anonymous workspaces (`POST /workspaces`, `GET /workspaces/{id}`), settings, the `workspaces` and `tasks` database tables with Alembic migrations, and the test setup.
 
 ## Setup (Windows PowerShell)
 
