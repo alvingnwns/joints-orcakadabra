@@ -25,12 +25,11 @@ export const id: Dictionary = {
   todayLoadError: "Kami belum bisa memuat harimu sekarang. Tidak ada yang hilang.",
   startHere: "Mulai dari sini",
   alsoToday: "Juga hari ini",
-  dayClear: "Harimu kosong. Tambahkan satu hal kecil kalau mau — atau nikmati saja.",
+  dayClear: "Harimu masih lapang. Tambahkan satu hal kecil kalau mau — atau nikmati saja.",
   allDone: "Semua untuk hari ini sudah selesai. Kerja bagus — istirahat juga bagian dari rencana.",
   doneTodayTitle: "Selesai hari ini",
   heavyLoadTitle: "Hari yang padat",
-  heavyOverCapacity:
-    "Hari ini berisi lebih dari satu hari yang nyaman. Tidak apa-apa memindahkan sesuatu.",
+  heavyOverCapacity: "Rencana hari ini cukup banyak. Tidak apa-apa memindahkan sesuatu.",
   heavyLongTasks: "Hari ini ada beberapa tugas panjang. Tidak apa-apa memindahkan satu.",
   delaySuggestion: "Yang ini bisa menunggu sampai besok:",
   moveIt: "Pindahkan",
@@ -52,7 +51,7 @@ export const id: Dictionary = {
   deleteButton: "Hapus",
   deleteConfirm: "Hapus tugas ini?",
   deleteYes: "Ya, hapus",
-  deleteKeep: "Biarkan",
+  deleteKeep: "Jangan hapus",
 
   changePlans: "Ubah rencana",
   actionTomorrow: "Pindah ke besok",
@@ -121,4 +120,6 @@ export const id: Dictionary = {
   chatYou: "Kamu",
   chatHelper: "Asisten",
   chatWhy: "Kenapa ini di sini?",
+
+  notFoundTitle: "Kami tidak menemukan halaman itu. Tidak ada yang hilang.",
 };

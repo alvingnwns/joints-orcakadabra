@@ -1,5 +1,6 @@
 "use client";
 
+import { Illustration } from "@/components/illustrations/Illustration";
 import { useT } from "@/components/LocaleProvider";
 import type { HeavyLoad, ScheduledTask } from "@/lib/schedule";
 
@@ -15,7 +16,12 @@ export function HeavyLoadNotice({ load, suggestion, onMove }: Props) {
   const t = useT();
 
   return (
-    <section aria-labelledby="heavy-load-title" className="rounded-card bg-peach p-4">
+    <section
+      aria-labelledby="heavy-load-title"
+      className="flex flex-col gap-4 rounded-card bg-peach p-4 sm:flex-row sm:items-center"
+    >
+      <Illustration name="heavy-load" width={112} className="shrink-0 sm:mx-0" />
+      <div>
       <h2 id="heavy-load-title" className="font-semibold">
         {t("heavyLoadTitle")}
       </h2>
@@ -36,6 +42,7 @@ export function HeavyLoadNotice({ load, suggestion, onMove }: Props) {
           </button>
         </div>
       )}
+      </div>
     </section>
   );
 }

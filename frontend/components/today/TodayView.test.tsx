@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { WorkspaceProvider } from "@/components/WorkspaceProvider";
+import { shownIllustrations } from "@/components/illustrations/testing";
 import type { HeavyLoad } from "@/lib/schedule";
 import { type Task, localDate } from "@/lib/tasks";
 
@@ -91,6 +92,7 @@ describe("TodayView", () => {
     renderView();
 
     expect(await screen.findByText(/Your day is clear/)).toBeInTheDocument();
+    expect(shownIllustrations(document.body)).toEqual(["empty-tasks"]); // nothing yet
     const todayCall = fetchMock.mock.calls.find(([url]) => url.includes("/tasks/today"))!;
     expect(todayCall[0]).toContain(`today=${localDate(0)}`); // the user's local date
 
@@ -120,6 +122,15 @@ describe("TodayView", () => {
 
     expect(await screen.findByText(/That's everything for today/)).toBeInTheDocument();
     expect(screen.getByText("Done today (1)")).toBeInTheDocument();
+    expect(shownIllustrations(document.body)).toEqual(["all-done"]);
+  });
+
+  it("shows the clear-day illustration when everything is saved for later", async () => {
+    fakeBackend([task("a", "Someday", { status: "deferred" })]);
+    renderView();
+
+    expect(await screen.findByText(/Your day is clear/)).toBeInTheDocument();
+    expect(shownIllustrations(document.body)).toEqual(["day-clear"]);
   });
 
   it("shows the heavy-load notice with a suggestion, and 'Move it' moves it to tomorrow", async () => {
@@ -131,6 +142,7 @@ describe("TodayView", () => {
 
     const notice = (await screen.findByRole("heading", { name: "A full day" })).parentElement!;
     expect(notice).toHaveTextContent("Small deal");
+    expect(shownIllustrations(document.body)).toEqual(["heavy-load"]);
 
     await userEvent.click(screen.getByRole("button", { name: "Move it" }));
 
@@ -162,6 +174,7 @@ describe("TodayView", () => {
     renderView();
 
     expect(await screen.findByText(/couldn't load your day/)).toBeInTheDocument();
+    expect(shownIllustrations(document.body)).toEqual(["oops"]);
     await userEvent.click(screen.getByRole("button", { name: "Try again" }));
 
     expect(await screen.findByLabelText(/Open/)).toBeInTheDocument();

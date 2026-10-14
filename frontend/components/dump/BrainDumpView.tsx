@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 
 import { BrainDumpInput } from "@/components/dump/BrainDumpInput";
 import { DraftReview, type EditableDraft } from "@/components/dump/DraftReview";
+import { Illustration } from "@/components/illustrations/Illustration";
 import { useLocale } from "@/components/LocaleProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { ApiError } from "@/lib/api";
@@ -79,6 +80,11 @@ export function BrainDumpView() {
 
       {(phase === "input" || phase === "parsing") && (
         <>
+          <Illustration
+            name={phase === "parsing" ? "untangling" : "brain-dump"}
+            width={180}
+            className={phase === "parsing" ? "motion-safe:animate-pulse" : ""}
+          />
           <BrainDumpInput
             text={text}
             onChange={setText}

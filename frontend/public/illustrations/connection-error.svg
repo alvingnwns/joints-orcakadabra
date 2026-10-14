@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-labelledby="title">
+  <title id="title">A sleepy cloud next to an unplugged cable</title>
+  <!-- Placeholder illustration: replace with final artwork, keep viewBox 240x180 -->
+  <ellipse cx="120" cy="100" rx="105" ry="70" fill="#FFF4E6"/>
+  <path d="M70 92 a22 22 0 0 1 40 -16 a18 18 0 0 1 32 10 a16 16 0 0 1 2 32 h-70 a14 14 0 0 1 -4 -26 Z"
+        fill="#FFFFFF" stroke="#A9CFE8" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M94 100 Q99 104 104 100 M120 100 Q125 104 130 100" fill="none" stroke="#2B3A55" stroke-width="2.5" stroke-linecap="round"/>
+  <text x="150" y="62" font-family="sans-serif" font-size="14" font-weight="700" fill="#C9B8E8">z</text>
+  <text x="160" y="48" font-family="sans-serif" font-size="18" font-weight="700" fill="#C9B8E8">z</text>
+  <path d="M30 150 C50 150 60 140 80 140 H96" fill="none" stroke="#2B3A55" stroke-width="4" stroke-linecap="round"/>
+  <rect x="96" y="132" width="18" height="16" rx="3" fill="#FDBA8C" stroke="#2B3A55" stroke-width="3"/>
+  <path d="M136 140 H150 C170 140 180 150 210 150" fill="none" stroke="#2B3A55" stroke-width="4" stroke-linecap="round"/>
+  <rect x="122" y="132" width="16" height="16" rx="3" fill="#A9CFE8" stroke="#2B3A55" stroke-width="3"/>
+  <line x1="122" y1="137" x2="116" y2="137" stroke="#2B3A55" stroke-width="3" stroke-linecap="round"/>
+  <line x1="122" y1="143" x2="116" y2="143" stroke="#2B3A55" stroke-width="3" stroke-linecap="round"/>
+</svg>

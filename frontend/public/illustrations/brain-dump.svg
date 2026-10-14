@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-labelledby="title">
+  <title id="title">A tangled scribble turning into a neat list</title>
+  <!-- Placeholder illustration: replace with final artwork, keep viewBox 240x180 -->
+  <ellipse cx="120" cy="100" rx="105" ry="70" fill="#FFF4E6"/>
+  <path d="M40 70 C30 50 70 40 78 60 C86 80 50 96 46 78 C42 60 92 54 96 80 C100 106 56 120 50 100 C44 82 88 90 84 112 C80 130 44 126 50 110"
+        fill="none" stroke="#C9B8E8" stroke-width="4" stroke-linecap="round"/>
+  <path d="M106 92 H130" stroke="#F28C7A" stroke-width="4" stroke-linecap="round"/>
+  <path d="M124 84 L132 92 L124 100" fill="none" stroke="#F28C7A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="142" y="48" width="66" height="88" rx="10" fill="#FFFFFF" stroke="#2B3A55" stroke-width="3"/>
+  <g>
+    <circle cx="156" cy="70" r="5" fill="#9CC5A1"/>
+    <line x1="166" y1="70" x2="196" y2="70" stroke="#2B3A55" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="156" cy="92" r="5" fill="#A9CFE8"/>
+    <line x1="166" y1="92" x2="190" y2="92" stroke="#2B3A55" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="156" cy="114" r="5" fill="#FDBA8C"/>
+    <line x1="166" y1="114" x2="194" y2="114" stroke="#2B3A55" stroke-width="4" stroke-linecap="round"/>
+  </g>
+</svg>

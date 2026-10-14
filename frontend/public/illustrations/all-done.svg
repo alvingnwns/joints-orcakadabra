@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-labelledby="title">
+  <title id="title">A happy orca leaping with confetti and a check mark</title>
+  <!-- Placeholder illustration: replace with final artwork, keep viewBox 240x180 -->
+  <ellipse cx="120" cy="100" rx="105" ry="70" fill="#FFF4E6"/>
+  <path d="M30 150 Q60 138 90 150 T150 150 T210 150" fill="none" stroke="#A9CFE8" stroke-width="6" stroke-linecap="round"/>
+  <g transform="translate(64 112) rotate(-28)">
+    <path d="M58 12 L64 -10 L76 14 Z" fill="#2B3A55"/>
+    <path d="M14 40 C4 34 -4 28 -10 18 C-5 32 -6 46 -12 58 C-2 52 6 47 14 44 Z" fill="#2B3A55"/>
+    <path d="M10 40 C10 15 45 4 70 11 C90 17 100 30 100 43 C100 59 76 67 52 67 C26 67 10 57 10 40 Z" fill="#2B3A55"/>
+    <path d="M32 54 C48 63 78 62 96 48 C90 61 72 66 52 66 C42 66 35 61 32 54 Z" fill="#FFFFFF"/>
+    <ellipse cx="78" cy="29" rx="8" ry="4.5" fill="#FFFFFF"/>
+    <path d="M75 30 Q79 26 83 30" fill="none" stroke="#2B3A55" stroke-width="2.2" stroke-linecap="round"/>
+    <circle cx="88" cy="40" r="3.5" fill="#F28C7A" opacity="0.7"/>
+    <path d="M84 46 Q90 53 97 45" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+  <circle cx="186" cy="52" r="20" fill="#9CC5A1"/>
+  <path d="M176 52 L183 59 L197 45" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <g>
+    <rect x="50" y="34" width="8" height="4" rx="2" fill="#F28C7A" transform="rotate(30 54 36)"/>
+    <rect x="92" y="22" width="8" height="4" rx="2" fill="#C9B8E8" transform="rotate(-20 96 24)"/>
+    <rect x="150" y="26" width="8" height="4" rx="2" fill="#FDBA8C" transform="rotate(45 154 28)"/>
+    <circle cx="70" cy="58" r="3" fill="#FFE08A"/>
+    <circle cx="214" cy="86" r="3" fill="#C9B8E8"/>
+    <circle cx="128" cy="40" r="3" fill="#9CC5A1"/>
+    <rect x="200" y="110" width="8" height="4" rx="2" fill="#FFE08A" transform="rotate(-35 204 112)"/>
+  </g>
+</svg>

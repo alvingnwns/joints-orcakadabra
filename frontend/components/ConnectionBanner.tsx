@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { Illustration } from "@/components/illustrations/Illustration";
 import { useT } from "@/components/LocaleProvider";
 import { apiFetch } from "@/lib/api";
 
@@ -35,6 +36,7 @@ export function ConnectionBanner() {
       )}
       {status === "error" && (
         <div className="flex flex-wrap items-center justify-center gap-3 bg-peach px-4 py-3 text-sm">
+          <Illustration name="connection-error" width={72} className="mx-0" />
           <p>{t("serverUnreachable")}</p>
           <button
             type="button"

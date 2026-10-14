@@ -11,6 +11,7 @@ import {
 
 import { type Message, ChatMessage } from "@/components/chat/ChatMessage";
 import { SuggestedQuestions } from "@/components/chat/SuggestedQuestions";
+import { Illustration } from "@/components/illustrations/Illustration";
 import { useLocale } from "@/components/LocaleProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { askSchedule } from "@/lib/chat";
@@ -115,7 +116,12 @@ export function ChatPanel({ children }: { children: ReactNode }) {
           </div>
 
           <div className="flex-1 space-y-4 overflow-y-auto p-4">
-            {messages.length === 0 && <p className="text-muted">{t("chatEmpty")}</p>}
+            {messages.length === 0 && (
+              <div className="text-center">
+                <Illustration name="chat-helper" width={160} className="mb-3" />
+                <p className="text-muted">{t("chatEmpty")}</p>
+              </div>
+            )}
             {/* role="log" announces each new message politely. */}
             <ul role="log" aria-live="polite" className="space-y-3">
               {messages.map((message, index) => (

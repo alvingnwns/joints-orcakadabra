@@ -28,7 +28,7 @@ export const en = {
   allDone: "That's everything for today. Nice work — resting is part of the plan too.",
   doneTodayTitle: "Done today",
   heavyLoadTitle: "A full day",
-  heavyOverCapacity: "Today holds more than a comfortable day. It's okay to move something.",
+  heavyOverCapacity: "Today looks like more than a comfortable day. It's okay to move something.",
   heavyLongTasks: "Today has several long tasks. It's okay to move one.",
   delaySuggestion: "This one could wait until tomorrow:",
   moveIt: "Move it",
@@ -102,7 +102,7 @@ export const en = {
   draftsSave: "Save these",
   draftsBack: "Back to my text",
   draftsNoneLeft: "No drafts left. Go back to your text to try again.",
-  draftsSaveError: "We couldn't save these just yet. Your drafts are still here, so try again.",
+  draftsSaveError: "We couldn't save these just yet. Your drafts are still here, so you can try again.",
   draftsSaved: "Saved. Your tasks are on your list.",
   draftsSeeToday: "See today",
 
@@ -120,6 +120,8 @@ export const en = {
   chatYou: "You",
   chatHelper: "Helper",
   chatWhy: "Why is this here?",
+
+  notFoundTitle: "We couldn't find that page. Nothing is lost.",
 };
 
 export type TranslationKey = keyof typeof en;

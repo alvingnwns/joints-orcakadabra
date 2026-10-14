@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 
+import { Illustration, type IllustrationName } from "@/components/illustrations/Illustration";
 import { LoadError, LoadingSkeleton } from "@/components/LoadStates";
 import { useT } from "@/components/LocaleProvider";
 import { LaterList } from "@/components/tasks/LaterList";
@@ -71,6 +72,9 @@ function TodayContent({ data, handlers }: { data: TodayData; handlers: Handlers 
   const { top, rest, heavy_load, delay_suggestion } = schedule;
   const suggested =
     [...top, ...rest].find((task) => task.id === delay_suggestion?.task_id) ?? null;
+  // All done today → celebrate; no tasks anywhere yet → an empty list; otherwise a clear day.
+  const emptyIllustration: IllustrationName =
+    doneToday.length > 0 ? "all-done" : later.length === 0 ? "empty-tasks" : "day-clear";
 
   return (
     <>
@@ -83,7 +87,7 @@ function TodayContent({ data, handlers }: { data: TodayData; handlers: Handlers 
       )}
 
       {top.length === 0 ? (
-        <p className="rounded-card bg-mint p-4">{t(doneToday.length > 0 ? "allDone" : "dayClear")}</p>
+        <EmptyDay name={emptyIllustration} text={t(doneToday.length > 0 ? "allDone" : "dayClear")} />
       ) : (
         <section aria-labelledby="start-here" className="space-y-3">
           <h2 id="start-here" className="text-lg font-semibold">
@@ -113,5 +117,14 @@ function TodayContent({ data, handlers }: { data: TodayData; handlers: Handlers 
       <LaterList tasks={later} {...handlers} />
       <LaterList tasks={doneToday} titleKey="doneTodayTitle" {...handlers} />
     </>
+  );
+}
+
+function EmptyDay({ name, text }: { name: IllustrationName; text: string }) {
+  return (
+    <div className="rounded-card bg-mint p-6 text-center">
+      <Illustration name={name} width={200} className="mb-4" />
+      <p>{text}</p>
+    </div>
   );
 }

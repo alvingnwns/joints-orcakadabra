@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 
+import { Illustration } from "@/components/illustrations/Illustration";
 import { useT } from "@/components/LocaleProvider";
 
 /**
@@ -27,6 +28,7 @@ export function AboutDialog() {
         aria-labelledby="about-title"
         className="m-auto max-w-md rounded-card bg-surface p-6 text-ink shadow-lg backdrop:bg-ink/40"
       >
+        <Illustration name="welcome" width={180} className="mb-4" />
         <h2 id="about-title" className="text-lg font-semibold">
           {t("aboutTitle")}
         </h2>

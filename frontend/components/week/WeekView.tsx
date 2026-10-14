@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 
+import { Illustration } from "@/components/illustrations/Illustration";
 import { LoadError, LoadingSkeleton } from "@/components/LoadStates";
 import { useLocale } from "@/components/LocaleProvider";
 import { TaskItem } from "@/components/tasks/TaskItem";
@@ -59,7 +60,12 @@ function WeekContent({ week, selected, onSelect, handlers }: ContentProps) {
 
   return (
     <>
-      {isEmpty && <p className="rounded-card bg-mint p-4">{t("weekEmpty")}</p>}
+      {isEmpty && (
+        <div className="rounded-card bg-mint p-6 text-center">
+          <Illustration name="week-empty" width={200} className="mb-4" />
+          <p>{t("weekEmpty")}</p>
+        </div>
+      )}
 
       <ul className="grid gap-2 sm:grid-cols-7">
         {week.days.map((item, index) => (

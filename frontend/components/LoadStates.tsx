@@ -1,5 +1,6 @@
 "use client";
 
+import { Illustration } from "@/components/illustrations/Illustration";
 import { useT } from "@/components/LocaleProvider";
 
 /** Skeleton with a screen-reader label, shared by the Today and Week views. */
@@ -19,7 +20,8 @@ export function LoadingSkeleton({ label }: { label: string }) {
 export function LoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
   const t = useT();
   return (
-    <div role="alert" className="rounded-card bg-peach p-4">
+    <div role="alert" className="rounded-card bg-peach p-4 text-center">
+      <Illustration name="oops" width={140} className="mb-3" />
       <p>{message}</p>
       <button
         type="button"
