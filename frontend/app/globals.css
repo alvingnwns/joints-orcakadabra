@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+/* Design tokens: warm and calm, matching the illustrations in assets/illustrations. */
+@theme {
+  --color-cream: #fbf7f0; /* page background */
+  --color-surface: #ffffff; /* cards, header */
+  --color-ink: #2b3a55; /* main text, outlines (navy from the illustrations) */
+  --color-muted: #5b6478; /* secondary text, AA contrast on cream and white */
+  --color-line: #e8e1d5; /* borders */
+  --color-peach: #fde4d0; /* gentle notices */
+  --color-mint: #d9f0e6; /* success */
+  --color-sky: #dbe8f7; /* info, focus accents */
+
+  --radius-card: 1rem;
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+/* Visible keyboard focus everywhere. */
+:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,4 @@
+# Installs everything the backend needs to run and test (runtime + dev tools).
+# Pinned versions live in backend/requirements.txt and backend/requirements-dev.txt.
+# Needs Python 3.11 or newer; the project is developed and tested on Python 3.12.
+-r backend/requirements-dev.txt

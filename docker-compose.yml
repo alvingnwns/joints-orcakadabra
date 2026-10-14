@@ -1,0 +1,22 @@
+# Local development database only. Production uses Supabase Postgres (CP19).
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: orca
+      POSTGRES_PASSWORD: orca # local-only credentials, never used outside your machine
+      POSTGRES_DB: orca
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Creates the separate test database (orca_test) on first start.
+      - ./backend/docker/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orca -d orca"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  pgdata:

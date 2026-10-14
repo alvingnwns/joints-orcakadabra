@@ -76,8 +76,8 @@ Until CP16, earlier checkpoints use simple text-only empty and error states. CP1
 - A6 Motion: Tailwind and CSS transitions only, no animation library. Always respect `prefers-reduced-motion`.
 - A7 Impact input is shown as 3 friendly choices ("Small deal / Matters / Really matters") stored as `impact_score` 1/3/5. The default of 3 matches the design.
 - A8 Tasks without an estimate count as 30 minutes for load calculations only. The stored value stays null.
-- A9 Python: target 3.12 for deployment compatibility. If it is unavailable in WSL, try 3.14 and pin whichever version passes CP1.
-- A10 Run `npm` and `.venv` commands from a single environment, either all Windows or all WSL. Consider moving the repo out of OneDrive if installs are slow or flaky.
+- A9 Python: 3.12 (3.12.13 on Windows, installed with `uv`). Dependencies are pinned to the exact versions that passed each checkpoint.
+- A10 Development runs in Windows PowerShell only (switched from WSL after CP1). The virtual environment is `backend\.venv`. Database URLs use `127.0.0.1` instead of `localhost`, because `localhost` resolves to IPv6 first on Windows and stalls connections to the Docker Postgres.
 - A11 Users can delete a task (after a confirmation step) in core. An undo toast is added in polish.
 - A12 i18n has no library. It is a typed dictionary (`en` is the source of truth, and a test fails if `id` is missing a key), a `LocaleProvider`, and `Intl` for date formatting. The default language comes from `navigator.language` (`id*` → Indonesian, otherwise English), and the choice is saved in `localStorage`. Revisit with `next-intl` only if routing by locale becomes necessary.
 - A13 Motivational messages (deferred, OPT7/OPT8): at most one LLM-generated message per workspace, per day, per locale. The result is cached in memory on the server, with no new table. Fixed local fallbacks (written in both languages) are used when the LLM is unavailable. The message appears on the Today screen as a small dismissible card. Never in a blocking dialog.

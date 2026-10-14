@@ -17,13 +17,13 @@ system-design.md       Product and system design
 IMPLEMENTATION.md      Ordered implementation checkpoints
 ```
 
-`backend/` and `frontend/` currently only contain placeholder READMEs. They are filled in by the checkpoints in `IMPLEMENTATION.md`.
+`frontend/` currently only contains a placeholder README. It is filled in by the checkpoints in `IMPLEMENTATION.md`.
 
 ## Local setup
 
-Not available yet. This section is completed as each part is built:
+Completed as each part is built:
 
-- Backend: checkpoint CP1 (CP2 adds the local database).
-- Frontend: checkpoint CP3.
+- Backend: see [`backend/README.md`](backend/README.md) (available since CP1; CP2 adds the local database).
+- Frontend: see [`frontend/README.md`](frontend/README.md) (available since CP3).
 
 Secrets such as API keys belong only in local `.env` files. Those are ignored by git, and `.env.example` templates are committed instead.
