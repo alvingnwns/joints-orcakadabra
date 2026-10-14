@@ -1,0 +1,16 @@
+# Tool configuration only. Dependencies are pinned in requirements*.txt.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+# The cache directory cannot be written on some mounted drives (e.g. WSL on NTFS/OneDrive).
+addopts = "-p no:cacheprovider"
+# Starlette now suggests `httpx2` for its TestClient. We keep the well-known `httpx` for now.
+filterwarnings = ["ignore:Using `httpx` with `starlette.testclient` is deprecated"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
