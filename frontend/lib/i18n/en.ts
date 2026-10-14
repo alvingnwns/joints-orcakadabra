@@ -34,6 +34,23 @@ export const en = {
   deleteConfirm: "Delete this task?",
   deleteYes: "Yes, delete",
   deleteKeep: "Keep it",
+
+  changePlans: "Change plans",
+  actionTomorrow: "Move to tomorrow",
+  actionPickDay: "Pick another day",
+  actionLater: "Not today, save for later",
+  actionSmaller: "Make it smaller",
+  actionBringBack: "Bring back",
+  newDayLabel: "New day",
+  smallerTitleLabel: "A smaller version of this task",
+  save: "Save",
+  cancel: "Cancel",
+  movedTomorrow: "Moved to tomorrow. Plans change — that's fine.",
+  movedDay: "Moved to a new day. Plans change — that's fine.",
+  movedLater: "Saved for later. You can bring it back anytime.",
+  broughtBack: "It's back on your list.",
+  madeSmaller: "Made it smaller. Small steps count.",
+  laterTitle: "Later",
 };
 
 export type TranslationKey = keyof typeof en;

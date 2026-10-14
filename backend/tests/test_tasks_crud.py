@@ -96,7 +96,9 @@ def test_list_returns_only_the_workspaces_own_tasks(client: TestClient):
 
     titles = [task["title"] for task in client.get("/tasks", headers=mine).json()]
 
-    assert titles == ["Mine 1", "Mine 2"]
+    # Sorted: inside one test transaction both rows get the same created_at (Postgres now()),
+    # so their order is decided by random ids. This test is about isolation, not order.
+    assert sorted(titles) == ["Mine 1", "Mine 2"]
 
 
 def test_list_filters_by_status(client: TestClient):

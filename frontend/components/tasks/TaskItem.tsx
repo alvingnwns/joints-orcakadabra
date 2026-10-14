@@ -6,15 +6,18 @@ import { useLocale } from "@/components/LocaleProvider";
 import { formatDate } from "@/lib/i18n";
 import type { Task } from "@/lib/tasks";
 
+import { TaskActions, type UpdateTask } from "./TaskActions";
+
 type Props = {
   task: Task;
   onToggle: (task: Task) => void;
   onDelete: (task: Task) => void;
+  onUpdate: UpdateTask;
 };
 
 const buttonClass = "min-h-11 rounded-full border border-ink px-4 text-sm font-medium hover:bg-cream";
 
-export function TaskItem({ task, onToggle, onDelete }: Props) {
+export function TaskItem({ task, onToggle, onDelete, onUpdate }: Props) {
   const { t, locale } = useLocale();
   const titleId = useId();
   const [confirming, setConfirming] = useState(false);
@@ -54,6 +57,8 @@ export function TaskItem({ task, onToggle, onDelete }: Props) {
           </button>
         )}
       </div>
+
+      <TaskActions task={task} onUpdate={onUpdate} />
 
       {confirming && (
         <div role="group" aria-label={t("deleteConfirm")} className="mt-3 rounded-xl bg-peach p-3">

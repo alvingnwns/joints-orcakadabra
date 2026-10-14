@@ -3,10 +3,20 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { useT } from "@/components/LocaleProvider";
+import { LaterList } from "@/components/tasks/LaterList";
 import { QuickAddForm } from "@/components/tasks/QuickAddForm";
 import { TaskItem } from "@/components/tasks/TaskItem";
 import { useWorkspace } from "@/components/WorkspaceProvider";
-import { type NewTask, type Task, createTask, deleteTask, listTasks, updateTask } from "@/lib/tasks";
+import type { TranslationKey } from "@/lib/i18n/en";
+import {
+  type NewTask,
+  type Task,
+  type TaskChanges,
+  createTask,
+  deleteTask,
+  listTasks,
+  updateTask,
+} from "@/lib/tasks";
 
 type State = { status: "loading" } | { status: "error" } | { status: "ready"; tasks: Task[] };
 
@@ -15,6 +25,7 @@ export function TasksView() {
   const workspaceId = useWorkspace();
   const [state, setState] = useState<State>({ status: "loading" });
   const [actionFailed, setActionFailed] = useState(false);
+  const [notice, setNotice] = useState<TranslationKey | null>(null);
 
   const load = useCallback(async () => {
     setState({ status: "loading" });
@@ -44,6 +55,7 @@ export function TasksView() {
 
   async function handleToggle(task: Task) {
     setActionFailed(false);
+    setNotice(null);
     try {
       const updated = await updateTask(workspaceId, task.id, {
         status: task.status === "done" ? "todo" : "done",
@@ -56,6 +68,7 @@ export function TasksView() {
 
   async function handleDelete(task: Task) {
     setActionFailed(false);
+    setNotice(null);
     try {
       await deleteTask(workspaceId, task.id);
       changeTasks((tasks) => tasks.filter((item) => item.id !== task.id));
@@ -64,10 +77,35 @@ export function TasksView() {
     }
   }
 
+  /** Optimistic: the change shows at once and is rolled back if the server says no. */
+  async function handleUpdate(task: Task, changes: TaskChanges, message: TranslationKey) {
+    const replace = (next: Task) =>
+      changeTasks((tasks) => tasks.map((item) => (item.id === next.id ? next : item)));
+    setActionFailed(false);
+    setNotice(null);
+    replace({ ...task, ...changes });
+    try {
+      replace(await updateTask(workspaceId, task.id, changes));
+      setNotice(message);
+    } catch {
+      replace(task);
+      setActionFailed(true);
+    }
+  }
+
+  const handlers = { onToggle: handleToggle, onDelete: handleDelete, onUpdate: handleUpdate };
+  const tasks = state.status === "ready" ? state.tasks : [];
+  const current = tasks.filter((task) => task.status !== "deferred");
+  const later = tasks.filter((task) => task.status === "deferred");
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">{t("tasksTitle")}</h1>
       <QuickAddForm onAdd={handleAdd} />
+
+      <p role="status" className={notice ? "rounded-xl bg-mint px-3 py-2 text-sm" : "sr-only"}>
+        {notice && t(notice)}
+      </p>
 
       {actionFailed && (
         <p role="alert" className="rounded-xl bg-peach px-3 py-2 text-sm">
@@ -98,16 +136,20 @@ export function TasksView() {
         </div>
       )}
 
-      {state.status === "ready" &&
-        (state.tasks.length === 0 ? (
-          <p className="text-muted">{t("tasksEmpty")}</p>
-        ) : (
-          <ul className="space-y-3">
-            {state.tasks.map((task) => (
-              <TaskItem key={task.id} task={task} onToggle={handleToggle} onDelete={handleDelete} />
-            ))}
-          </ul>
-        ))}
+      {state.status === "ready" && (
+        <>
+          {current.length === 0 ? (
+            <p className="text-muted">{t("tasksEmpty")}</p>
+          ) : (
+            <ul className="space-y-3">
+              {current.map((task) => (
+                <TaskItem key={task.id} task={task} {...handlers} />
+              ))}
+            </ul>
+          )}
+          <LaterList tasks={later} {...handlers} />
+        </>
+      )}
     </div>
   );
 }

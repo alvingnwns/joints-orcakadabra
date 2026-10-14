@@ -17,7 +17,7 @@ const task: Task = {
 
 describe("TaskItem", () => {
   it("shows the title, due date and estimate", () => {
-    render(<TaskItem task={task} onToggle={vi.fn()} onDelete={vi.fn()} />);
+    render(<TaskItem task={task} onToggle={vi.fn()} onDelete={vi.fn()} onUpdate={vi.fn()} />);
 
     expect(screen.getByLabelText(/Write report/)).not.toBeChecked();
     expect(screen.getByText(/Due .*16/)).toHaveTextContent("90 min");
@@ -25,18 +25,18 @@ describe("TaskItem", () => {
 
   it("marks a task done and undone through the checkbox", async () => {
     const onToggle = vi.fn();
-    const { rerender } = render(<TaskItem task={task} onToggle={onToggle} onDelete={vi.fn()} />);
+    const { rerender } = render(<TaskItem task={task} onToggle={onToggle} onDelete={vi.fn()} onUpdate={vi.fn()} />);
 
     await userEvent.click(screen.getByLabelText(/Write report/));
     expect(onToggle).toHaveBeenCalledWith(task);
 
-    rerender(<TaskItem task={{ ...task, status: "done" }} onToggle={onToggle} onDelete={vi.fn()} />);
+    rerender(<TaskItem task={{ ...task, status: "done" }} onToggle={onToggle} onDelete={vi.fn()} onUpdate={vi.fn()} />);
     expect(screen.getByLabelText(/Write report/)).toBeChecked();
   });
 
   it("asks before deleting, and 'Keep it' cancels", async () => {
     const onDelete = vi.fn();
-    render(<TaskItem task={task} onToggle={vi.fn()} onDelete={onDelete} />);
+    render(<TaskItem task={task} onToggle={vi.fn()} onDelete={onDelete} onUpdate={vi.fn()} />);
 
     await userEvent.click(screen.getByRole("button", { name: "Delete" }));
     expect(onDelete).not.toHaveBeenCalled();
@@ -49,7 +49,7 @@ describe("TaskItem", () => {
 
   it("deletes only after confirming", async () => {
     const onDelete = vi.fn();
-    render(<TaskItem task={task} onToggle={vi.fn()} onDelete={onDelete} />);
+    render(<TaskItem task={task} onToggle={vi.fn()} onDelete={onDelete} onUpdate={vi.fn()} />);
 
     await userEvent.click(screen.getByRole("button", { name: "Delete" }));
     await userEvent.click(screen.getByRole("button", { name: "Yes, delete" }));

@@ -10,8 +10,8 @@ import { TasksView } from "./TasksView";
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
 
 /** In-memory fake of the backend endpoints that this screen uses. */
-function fakeBackend(initial: Task[] = [], options: { failList?: number } = {}) {
-  const tasks = [...initial];
+function fakeBackend(initial: Task[] = [], options: { failList?: number; failPatch?: boolean } = {}) {
+  const tasks = initial.map((task) => ({ ...task })); // copies, so tests don't leak changes
   let listFailures = options.failList ?? 0;
   const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
     const { pathname } = new URL(url);
@@ -34,7 +34,10 @@ function fakeBackend(initial: Task[] = [], options: { failList?: number } = {}) 
       return json(task, 201);
     }
     const task = tasks.find((item) => pathname === `/tasks/${item.id}`)!;
-    if (method === "PATCH") return json(Object.assign(task, JSON.parse(init?.body as string)));
+    if (method === "PATCH") {
+      if (options.failPatch) return json({ detail: "nope" }, 500);
+      return json(Object.assign(task, JSON.parse(init?.body as string)));
+    }
     tasks.splice(tasks.indexOf(task), 1);
     return new Response(null, { status: 204 });
   });
@@ -104,5 +107,38 @@ describe("TasksView", () => {
     await userEvent.click(await screen.findByRole("button", { name: "Try again" }));
 
     expect(await screen.findByLabelText(/Write report/)).toBeInTheDocument();
+  });
+
+  it("saves a task for later, shows a kind note, and brings it back", async () => {
+    fakeBackend([existing]);
+    renderView();
+
+    await userEvent.click(await screen.findByRole("button", { name: "Change plans" }));
+    await userEvent.click(screen.getByRole("button", { name: "Not today, save for later" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Saved for later. You can bring it back anytime.",
+    );
+    expect(screen.getByText(/Nothing here yet/)).toBeInTheDocument();
+    expect(screen.getByText("Later (1)")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByText("Later (1)"));
+    await userEvent.click(screen.getByRole("button", { name: "Bring back" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent("It's back on your list.");
+    expect(screen.queryByText(/Later/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Change plans" })).toBeInTheDocument();
+  });
+
+  it("rolls back an optimistic change when the server refuses it", async () => {
+    fakeBackend([existing], { failPatch: true });
+    renderView();
+
+    await userEvent.click(await screen.findByRole("button", { name: "Change plans" }));
+    await userEvent.click(screen.getByRole("button", { name: "Not today, save for later" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("That didn't go through.");
+    expect(screen.queryByText(/Later/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Change plans" })).toBeInTheDocument();
   });
 });
