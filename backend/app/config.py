@@ -21,7 +21,9 @@ class Settings(BaseSettings):
     # LLM provider (used from CP12). The key lives in the backend only, never in the frontend.
     llm_api_key: str = ""
     llm_base_url: str = "https://openrouter.ai/api/v1"
-    llm_model: str = "qwen/qwen3-14b"
+    llm_model: str = "nvidia/nemotron-3-super-120b-a12b:free"  # brain-dump parsing (CP12)
+    llm_chat_model: str = "google/gemma-4-31b-it:free"  # schedule chat (CP14)
+    llm_timeout_seconds: float = 20.0
 
     @property
     def cors_origin_list(self) -> list[str]:

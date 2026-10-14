@@ -118,3 +118,18 @@ class WeekOut(BaseModel):
     capacity_minutes: int
     days: list[DayOut]
     unscheduled: DayOut
+
+
+# --- brain dump (CP12) ---
+
+
+class ParseRequest(BaseModel):
+    text: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=5000)]
+    today: date  # the user's local date (Q1), used to resolve "tomorrow" or "Friday"
+    locale: Literal["en", "id"] = "en"
+
+
+class BulkCreate(BaseModel):
+    """Approved drafts, saved together: one invalid item rejects the whole request."""
+
+    tasks: Annotated[list[TaskCreate], Field(min_length=1, max_length=50)]

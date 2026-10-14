@@ -3,16 +3,19 @@ from datetime import UTC, date, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.deps import get_workspace
-from app.models import Task, TaskStatus, Workspace
+from app.models import SourceType, Task, TaskStatus, Workspace
 from app.schemas import (
+    BulkCreate,
     DayOut,
     DelaySuggestionOut,
     HeavyLoadOut,
+    ParseRequest,
     ScheduledTaskOut,
     TaskCreate,
     TaskOut,
@@ -20,6 +23,8 @@ from app.schemas import (
     TodayOut,
     WeekOut,
 )
+from app.services.llm import LLMClient, LLMInvalidOutput, LLMUnavailable, get_llm
+from app.services.parse import Draft, parse_brain_dump
 from app.services.priority import compute_priority
 from app.services.schedule import ACTIVE_STATUSES, Bucket, ScoredTask, build_today, build_week
 
@@ -69,6 +74,55 @@ def create_task(body: TaskCreate, db: DbSession, workspace: CurrentWorkspace) ->
     db.commit()
     db.refresh(task)
     return task
+
+
+# --- brain dump (CP12) ---
+
+
+class DraftsOut(BaseModel):
+    drafts: list[Draft]
+
+
+@router.post(
+    "/parse",
+    response_model=DraftsOut,
+    responses={422: {"description": "no_tasks_found"}, 502: {"description": "ai_unavailable"}},
+)
+def parse_tasks(
+    body: ParseRequest, workspace: CurrentWorkspace, llm: Annotated[LLMClient, Depends(get_llm)]
+) -> DraftsOut:
+    """Turns a brain dump into drafts for review. Nothing is saved."""
+    # Error details are codes; the frontend shows its own calm text in the user's language.
+    try:
+        drafts = parse_brain_dump(llm, body.text, body.today, body.locale)
+    except LLMUnavailable as error:
+        raise HTTPException(status_code=502, detail="ai_unavailable") from error
+    except LLMInvalidOutput as error:
+        raise HTTPException(status_code=502, detail="ai_invalid_output") from error
+    if not drafts:
+        raise HTTPException(status_code=422, detail="no_tasks_found")
+    return DraftsOut(drafts=drafts)
+
+
+@router.post("/bulk", response_model=list[TaskOut], status_code=201)
+def create_tasks_bulk(body: BulkCreate, db: DbSession, workspace: CurrentWorkspace) -> list[Task]:
+    """Saves approved AI drafts in one transaction (C7)."""
+    tasks = [
+        Task(
+            workspace_id=workspace.id,
+            status=TaskStatus.TODO,
+            source_type=SourceType.AI_PARSED,
+            **item.model_dump(),
+        )
+        for item in body.tasks
+    ]
+    for task in tasks:
+        _apply_priority(task)
+    db.add_all(tasks)
+    db.commit()
+    for task in tasks:
+        db.refresh(task)
+    return tasks
 
 
 @router.get("", response_model=list[TaskOut])
