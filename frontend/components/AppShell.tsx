@@ -14,6 +14,7 @@ import type { TranslationKey } from "@/lib/i18n/en";
 const NAV: { href: string; label: TranslationKey }[] = [
   { href: "/", label: "todayTitle" },
   { href: "/week", label: "navWeek" },
+  { href: "/dump", label: "navDump" },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -40,7 +41,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
         <nav aria-label={t("navLabel")} className="mx-auto max-w-3xl px-4 pb-3">
-          <ul className="flex gap-2">
+          <ul className="flex flex-wrap gap-2">
             {NAV.map((item) => {
               const current = pathname === item.href;
               return (

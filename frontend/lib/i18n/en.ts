@@ -81,6 +81,30 @@ export const en = {
   loadFull: "Full day",
   unscheduledTitle: "No date yet",
   dayEmpty: "Nothing planned for that day.",
+
+  navDump: "Brain dump",
+  dumpTitle: "Just dump it here",
+  dumpLabel: "Everything on your mind, in any order",
+  dumpPlaceholder:
+    "e.g. call mum tomorrow, finish the report by Friday (about 2 hours), buy milk",
+  dumpHint:
+    "An AI helper sorts your text into tasks. Nothing is saved until you check and approve them.",
+  dumpSubmit: "Sort it out for me",
+  dumpParsing: "Untangling…",
+  dumpAiError: "Our helper couldn't sort this out right now. Your text is still here.",
+  dumpNoTasks: "We couldn't find any tasks in that. Try writing a few things you need to do.",
+  dumpManual: "Add them manually instead",
+  draftsTitle: "Here's what we found",
+  draftsIntro: "Change or remove anything before saving.",
+  draftTitleLabel: "Task",
+  draftCheck: "Please check this one",
+  draftRemove: "Remove",
+  draftsSave: "Save these",
+  draftsBack: "Back to my text",
+  draftsNoneLeft: "No drafts left. Go back to your text to try again.",
+  draftsSaveError: "We couldn't save these just yet. Your drafts are still here, so try again.",
+  draftsSaved: "Saved. Your tasks are on your list.",
+  draftsSeeToday: "See today",
 };
 
 export type TranslationKey = keyof typeof en;
