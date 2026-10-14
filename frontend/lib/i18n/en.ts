@@ -122,6 +122,13 @@ export const en = {
   chatWhy: "Why is this here?",
 
   notFoundTitle: "We couldn't find that page. Nothing is lost.",
+
+  cheerCounts: "Done. That counts.",
+  cheerLighter: "Nice — one less thing to carry.",
+  cheerStep: "One small step, done.",
+  deletedNotice: "Task deleted.",
+  undo: "Undo",
+  undoneNotice: "Changed back.",
 };
 
 export type TranslationKey = keyof typeof en;

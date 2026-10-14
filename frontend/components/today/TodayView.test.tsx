@@ -122,7 +122,75 @@ describe("TodayView", () => {
 
     expect(await screen.findByText(/That's everything for today/)).toBeInTheDocument();
     expect(screen.getByText("Done today (1)")).toBeInTheDocument();
-    expect(shownIllustrations(document.body)).toEqual(["all-done"]);
+    expect(shownIllustrations(document.body).sort()).toEqual(["all-done", "celebrate"]);
+    // The toast has one short encouraging line from the small set.
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /Done\. That counts\.|one less thing to carry|One small step, done\./,
+    );
+  });
+
+  it("undoes marking a task done, on the server", async () => {
+    const fetchMock = fakeBackend([task("a", "Only one")]);
+    renderView();
+
+    await userEvent.click(await screen.findByLabelText(/Only one/));
+    await userEvent.click(await screen.findByRole("button", { name: "Undo" }));
+
+    expect(await screen.findByText("Changed back.")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Start here" })).toBeInTheDocument();
+    const patches = fetchMock.mock.calls.filter(([, init]) => init?.method === "PATCH");
+    expect(patches.map(([, init]) => JSON.parse(init!.body as string))).toEqual([
+      { status: "done" },
+      { status: "todo" },
+    ]);
+  });
+
+  it("undoes 'Move it' by restoring the previous date", async () => {
+    const fetchMock = fakeBackend([task("a", "Big"), task("b", "Small", { due_date: "2026-01-02" })], {
+      heavy,
+      suggest: "b",
+    });
+    renderView();
+
+    await userEvent.click(await screen.findByRole("button", { name: "Move it" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Undo" }));
+
+    await screen.findByText("Changed back.");
+    const patches = fetchMock.mock.calls.filter(([, init]) => init?.method === "PATCH");
+    expect(JSON.parse(patches[1][1]!.body as string)).toEqual({ due_date: "2026-01-02" });
+  });
+
+  it("undoes a delete by recreating the task with the same details", async () => {
+    const fetchMock = fakeBackend([
+      task("a", "Report", { due_date: "2026-10-20", estimated_minutes: 90, impact_score: 5 }),
+    ]);
+    renderView();
+
+    await userEvent.click(await screen.findByRole("button", { name: "Delete" }));
+    await userEvent.click(screen.getByRole("button", { name: "Yes, delete" }));
+    expect(await screen.findByText("Task deleted.")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Undo" }));
+
+    expect(await screen.findByLabelText(/Report/)).toBeInTheDocument();
+    const post = fetchMock.mock.calls.find(
+      ([url, init]) => url.endsWith("/tasks") && init?.method === "POST",
+    )!;
+    expect(JSON.parse(post[1]!.body as string)).toEqual({
+      title: "Report",
+      impact_score: 5,
+      due_date: "2026-10-20",
+      estimated_minutes: 90,
+    });
+  });
+
+  it("closes the toast with the close button", async () => {
+    fakeBackend([task("a", "Only one")]);
+    renderView();
+
+    await userEvent.click(await screen.findByLabelText(/Only one/));
+    await userEvent.click(await screen.findByRole("button", { name: "Close" }));
+
+    expect(screen.queryByRole("button", { name: "Undo" })).not.toBeInTheDocument();
   });
 
   it("shows the clear-day illustration when everything is saved for later", async () => {

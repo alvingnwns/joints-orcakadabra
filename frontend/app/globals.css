@@ -13,6 +13,35 @@
 
   --radius-card: 1rem;
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+
+  /* A soft "pop" for toasts and the completion check (CP17). */
+  --animate-pop: pop 300ms ease-out;
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+
+/* Gentle hover and press feedback on every control. */
+button,
+a,
+summary {
+  transition:
+    background-color 150ms ease,
+    color 150ms ease,
+    transform 100ms ease;
+}
+@media (prefers-reduced-motion: no-preference) {
+  button:not(:disabled):active,
+  a:active {
+    transform: scale(0.97);
+  }
 }
 
 body {

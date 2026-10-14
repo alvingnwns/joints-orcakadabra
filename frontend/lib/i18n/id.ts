@@ -122,4 +122,11 @@ export const id: Dictionary = {
   chatWhy: "Kenapa ini di sini?",
 
   notFoundTitle: "Kami tidak menemukan halaman itu. Tidak ada yang hilang.",
+
+  cheerCounts: "Selesai. Itu berarti.",
+  cheerLighter: "Mantap — satu beban berkurang.",
+  cheerStep: "Satu langkah kecil, selesai.",
+  deletedNotice: "Tugas dihapus.",
+  undo: "Urungkan",
+  undoneNotice: "Sudah dikembalikan.",
 };

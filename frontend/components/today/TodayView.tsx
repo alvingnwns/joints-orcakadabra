@@ -44,7 +44,7 @@ export function TodayView() {
   }, [workspaceId]);
 
   const { state, reload, refresh } = useLoad(fetcher);
-  const { handlers, notice, failed } = useTaskActions(refresh);
+  const { handlers, feedback } = useTaskActions(refresh);
 
   async function handleAdd(newTask: NewTask) {
     await createTask(workspaceId, newTask); // the form handles a failure
@@ -55,7 +55,7 @@ export function TodayView() {
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">{t("todayTitle")}</h1>
       <QuickAddForm onAdd={handleAdd} />
-      <TaskFeedback notice={notice} failed={failed} />
+      <TaskFeedback {...feedback} />
 
       {state.status === "loading" && <LoadingSkeleton label={t("todayLoading")} />}
       {state.status === "error" && (

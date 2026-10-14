@@ -22,13 +22,13 @@ export function WeekView() {
   const workspaceId = useWorkspace();
   const fetcher = useCallback(() => getWeek(workspaceId, localDate(0)), [workspaceId]);
   const { state, reload, refresh } = useLoad(fetcher);
-  const { handlers, notice, failed } = useTaskActions(refresh);
+  const { handlers, feedback } = useTaskActions(refresh);
   const [selected, setSelected] = useState(0); // index into days; 0 is today
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">{t("weekTitle")}</h1>
-      <TaskFeedback notice={notice} failed={failed} />
+      <TaskFeedback {...feedback} />
       {state.status === "loading" && <LoadingSkeleton label={t("weekLoading")} />}
       {state.status === "error" && (
         <LoadError message={t("weekLoadError")} onRetry={() => void reload()} />
