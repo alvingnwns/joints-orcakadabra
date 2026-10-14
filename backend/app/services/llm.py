@@ -34,7 +34,7 @@ class LLMClient:
     def complete_json(
         self, *, messages: list[dict[str, str]], schema_name: str, schema: dict[str, Any]
     ) -> Any:
-        """Asks the parsing model for JSON that follows `schema` and returns it parsed."""
+        """Asks the parsing model (LLM_MODEL) for JSON that follows `schema`."""
         body = {
             "model": self._settings.llm_model,
             "messages": messages,
@@ -53,6 +53,22 @@ class LLMClient:
             return json.loads(content)
         except json.JSONDecodeError as error:
             raise LLMInvalidOutput("The model did not return valid JSON.") from error
+
+    def complete_text(self, *, messages: list[dict[str, str]], max_tokens: int = 400) -> str:
+        """Asks the chat model for a short plain-text answer.
+
+        The free chat model is often rate-limited upstream, so OpenRouter falls back to the
+        parsing model automatically (its `models` list); both are pinned in settings.
+        """
+        body = {
+            "models": [self._settings.llm_chat_model, self._settings.llm_model],
+            "messages": messages,
+            "temperature": 0.3,  # a little variety in wording; facts come from the context
+            "max_tokens": max_tokens,
+            # Hidden reasoning would eat the token budget and leave an empty answer.
+            "reasoning": {"enabled": False},
+        }
+        return self._post(body).strip()
 
     def _post(self, body: dict[str, Any]) -> str:
         if not self._settings.llm_api_key:
