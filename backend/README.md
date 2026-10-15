@@ -2,7 +2,7 @@
 
 FastAPI service for tasks, the deterministic priority engine, schedule generation, and LLM calls.
 
-Currently available (up to checkpoint CP5): `GET /health`, anonymous workspaces (`POST /workspaces`, `GET /workspaces/{id}`), task CRUD (`/tasks`, scoped to the workspace sent in the `X-Workspace-Id` header; interactive docs at `/docs`), settings, the `workspaces` and `tasks` database tables with Alembic migrations, and the test setup.
+Endpoints: `GET /health`; anonymous workspaces (`POST /workspaces`, `GET /workspaces/{id}`); task CRUD, schedule (`GET /tasks/today`, `GET /tasks/week`), brain-dump parsing (`POST /tasks/parse`, `POST /tasks/bulk`) — all scoped to the workspace in the `X-Workspace-Id` header; and schedule chat (`POST /chat/query`). Interactive docs are at `/docs`. LLM prompts live in `app/services/prompts.py`. Deployment: see the root [`README.md`](../README.md#deploy).
 
 ## Setup (Windows PowerShell)
 

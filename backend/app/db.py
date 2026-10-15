@@ -25,7 +25,11 @@ class Base(DeclarativeBase):
 @lru_cache
 def get_engine() -> Engine:
     # Created lazily, so importing the app never needs a running database.
-    return create_engine(get_settings().database_url, pool_pre_ping=True)
+    # prepare_threshold=None turns off psycopg's server-side prepared statements, which a
+    # transaction-mode pooler (Supabase port 6543) cannot handle. Harmless everywhere else.
+    return create_engine(
+        get_settings().database_url, pool_pre_ping=True, connect_args={"prepare_threshold": None}
+    )
 
 
 @lru_cache
