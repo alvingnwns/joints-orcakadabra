@@ -7,7 +7,7 @@ export const id: Dictionary = {
   languageLabel: "Bahasa",
   connecting: "Menghubungkan…",
   serverUnreachable:
-    "Kami belum bisa terhubung ke server. Tidak ada yang hilang, coba lagi sebentar lagi.",
+    "Kami belum bisa terhubung ke server, jadi perubahan belum bisa disimpan. Yang sudah kamu ketik tetap ada di sini. Coba lagi sebentar lagi.",
   tryAgain: "Coba lagi",
   workspaceLoading: "Menyiapkan ruangmu…",
   workspaceError: "Kami belum bisa menyiapkan ruangmu. Tidak ada yang hilang. Silakan coba lagi.",
@@ -84,6 +84,8 @@ export const id: Dictionary = {
   dayEmpty: "Belum ada rencana untuk hari tersebut.",
 
   navDump: "Curah pikiran",
+  navTasks: "Semua tugas",
+  tasksSoon: "Daftar lengkap tugasmu, dengan pencarian dan filter, segera hadir.",
   dumpTitle: "Tuang saja di sini",
   dumpLabel: "Semua yang ada di pikiranmu, urutannya bebas",
   dumpPlaceholder: "mis. besok telepon ibu, laporan selesai Jumat (sekitar 2 jam), beli susu",

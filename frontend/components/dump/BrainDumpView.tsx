@@ -67,7 +67,7 @@ export function BrainDumpView() {
   const reviewing = phase === "review" || phase === "saving";
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-3xl space-y-6">
       <h1 className="text-display font-semibold">{t("dumpTitle")}</h1>
 
       {/* Announces progress and results to screen readers. */}

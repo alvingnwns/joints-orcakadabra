@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import type { ReactNode } from "react";
 
@@ -13,6 +13,10 @@ export const metadata: Metadata = {
   title: "Orca — a friendly task scheduler",
   description: "See what to do next. Postponing, simplifying, or skipping is always fine.",
 };
+
+// "cover" lets the page use the full screen on phones with notches, so the bottom navigation can
+// pad itself with env(safe-area-inset-bottom) instead of sitting under the home indicator.
+export const viewport: Viewport = { viewportFit: "cover" };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

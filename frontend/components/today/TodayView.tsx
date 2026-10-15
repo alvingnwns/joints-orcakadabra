@@ -53,7 +53,7 @@ export function TodayView() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-3xl space-y-6">
       <h1 className="text-display font-semibold">{t("todayTitle")}</h1>
       <QuickAddForm onAdd={handleAdd} />
       <TaskFeedback {...feedback} />

@@ -33,7 +33,7 @@ export function Toast({ toast, onUndo, onDismiss }: Props) {
     <div
       role="status"
       aria-live="polite"
-      className="fixed inset-x-4 bottom-20 z-40 sm:bottom-4 sm:left-4 sm:right-auto sm:max-w-sm"
+      className="fixed inset-x-4 bottom-[calc(8.5rem+env(safe-area-inset-bottom))] z-40 md:bottom-4 md:left-8 md:right-auto md:max-w-sm"
     >
       {toast && (
         <div className="flex items-center gap-3 rounded-card bg-text p-3 text-on-primary shadow-lg motion-safe:animate-pop">

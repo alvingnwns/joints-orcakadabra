@@ -43,4 +43,48 @@ describe("ConnectionBanner", () => {
     );
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
+
+  it("says plainly that changes can't be saved while the server is down", async () => {
+    mockFetch("fail");
+    render(<ConnectionBanner />);
+
+    expect(await screen.findByText(/changes can't be saved yet/)).toBeInTheDocument();
+  });
+
+  it("checks again when the window regains focus, and clears itself", async () => {
+    const fetchMock = mockFetch("fail", "ok");
+    render(<ConnectionBanner />);
+    await screen.findByRole("button", { name: "Try again" });
+
+    window.dispatchEvent(new Event("focus"));
+
+    await vi.waitFor(() =>
+      expect(screen.queryByRole("button", { name: "Try again" })).not.toBeInTheDocument(),
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("checks again when the browser comes back online", async () => {
+    mockFetch("fail", "ok");
+    render(<ConnectionBanner />);
+    await screen.findByRole("button", { name: "Try again" });
+
+    window.dispatchEvent(new Event("online"));
+
+    await vi.waitFor(() =>
+      expect(screen.queryByRole("button", { name: "Try again" })).not.toBeInTheDocument(),
+    );
+  });
+
+  it("keeps showing the message if the server is still down after retrying", async () => {
+    mockFetch("fail", "fail");
+    render(<ConnectionBanner />);
+
+    await userEvent.click(await screen.findByRole("button", { name: "Try again" }));
+
+    await vi.waitFor(() =>
+      expect(screen.getByRole("button", { name: "Try again" })).toBeEnabled(),
+    );
+    expect(screen.getByText(/can't reach the server/)).toBeInTheDocument();
+  });
 });

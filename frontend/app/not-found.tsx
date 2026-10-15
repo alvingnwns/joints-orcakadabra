@@ -10,6 +10,7 @@ export default function NotFound() {
   const t = useT();
   return (
     <EmptyState
+      className="mx-auto max-w-xl"
       tone="neutral"
       illustration="oops"
       illustrationWidth={200}

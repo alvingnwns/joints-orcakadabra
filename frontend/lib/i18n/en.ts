@@ -6,7 +6,7 @@ export const en = {
   languageLabel: "Language",
   connecting: "Connecting…",
   serverUnreachable:
-    "We can't reach the server right now. Nothing is lost, so try again in a moment.",
+    "We can't reach the server right now, so changes can't be saved yet. Anything you typed stays here. Try again in a moment.",
   tryAgain: "Try again",
   workspaceLoading: "Getting your space ready…",
   workspaceError: "We couldn't set up your space just yet. Nothing is lost. Please try again.",
@@ -83,6 +83,8 @@ export const en = {
   dayEmpty: "Nothing planned for that day.",
 
   navDump: "Brain dump",
+  navTasks: "All tasks",
+  tasksSoon: "Your full task list, with search and filters, is coming next.",
   dumpTitle: "Just dump it here",
   dumpLabel: "Everything on your mind, in any order",
   dumpPlaceholder:

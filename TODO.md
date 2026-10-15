@@ -152,12 +152,19 @@ Things that look different, on purpose:
 
 Not done in this checkpoint (belongs to later ones): layout width, bottom navigation, safe-area spacing for the chat button and toast (CP-U2); priority labels, edit dialog, review step for the heavy-load suggestion (CP-U3).
 
-### CP-U2: Shell and navigation
-- [ ] Desktop: header or sidebar with identity, nav, language, About. Wider content area with a readable inner width.
-- [ ] Mobile: bottom navigation (Today, Week, All tasks, Brain dump). Chat entry and toast positioned together with safe-area padding, no overlap.
-- [ ] Connection banner: clearer copy ("Changes can't be saved right now"), retry, and a recheck on window focus.
-- [ ] Add the `/tasks` nav item as a placeholder target for CP-U4.
-- [ ] Tests: nav `aria-current`, banner retry, language switch still persists.
+### CP-U2: Shell and navigation (done, waiting for your review)
+- [x] One `<nav>` for all sizes: inline in the header from 768 px up, a fixed bottom bar below it, padded for the phone home indicator (`env(safe-area-inset-bottom)`; `viewport-fit=cover` added in `app/layout.tsx` so the inset is real). Four destinations with icon and label: Today, Week, All tasks, Brain dump. The current page has `aria-current="page"` plus bold weight and a green tint (not color alone).
+- [x] Wider shell (`max-w-6xl`, about 1152 px). Today, Brain dump, All tasks and the 404 keep a readable `max-w-3xl` column; Week uses the full width.
+- [x] Chat button and toast positioned together: on mobile the chat button sits above the nav and the toast above the chat button; on desktop the chat button is bottom right and the toast bottom left. Main content has bottom padding so nothing hides behind them.
+- [x] Connection banner: sticky at the top, amber, with a Wi-Fi-off icon, and plain copy that says changes can't be saved yet and typed text stays. Retry is disabled while it checks. It rechecks when the tab regains focus and when the browser goes back online, so it clears itself.
+- [x] `/tasks` placeholder page ("All tasks", with a note that the list is coming) so the nav link works. The real page is CP-U4.
+- [x] i18n: `navTasks`, `tasksSoon` added; `serverUnreachable` reworded, in both languages.
+- [x] Tests: 151 pass (140 before + 11 new): nav order, links, `aria-current` per page, labels change with language, skip link/About/chat present, banner copy, recheck on focus and on online, still-down after retry.
+
+Notes:
+- The connection banner no longer uses the `connection-error` illustration (a slim sticky bar uses an icon instead). The file stays in `public/illustrations`; it is unused until/unless a larger error screen needs it.
+- The language switcher is unchanged and its persistence test still passes.
+- Not verified in a real browser: the bottom bar, safe-area spacing and chat/toast stacking were checked through generated CSS and server output only.
 
 ### CP-U3: Today and task interactions
 - [ ] One reusable `TaskCard` for Today, Week and the library: title, description (clamped), due date, estimate, importance, priority badge, completion control, one "More" menu (Edit, Move to tomorrow, Pick a day, Later, Delete).

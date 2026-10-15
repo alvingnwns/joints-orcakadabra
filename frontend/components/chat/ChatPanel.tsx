@@ -101,7 +101,7 @@ export function ChatPanel({ children }: { children: ReactNode }) {
         icon={MessageCircle}
         aria-haspopup="dialog"
         onClick={openPanel}
-        className="fixed bottom-4 right-4 shadow-lg"
+        className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-20 shadow-lg md:bottom-4 md:right-8"
       >
         {t("chatOpen")}
       </Button>
