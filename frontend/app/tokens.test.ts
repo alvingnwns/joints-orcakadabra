@@ -4,14 +4,19 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 /** Reads the --color-* tokens straight from globals.css, so the test cannot drift from the app. */
-function readTokens(): Record<string, string> {
-  const css = readFileSync(join(process.cwd(), "app", "globals.css"), "utf8");
+function readTokens(css: string): Record<string, string> {
   const tokens: Record<string, string> = {};
-  for (const match of css.matchAll(/--color-([a-z-]+):\s*(#[0-9a-f]{6})\b/gi)) {
+  for (const match of css.matchAll(/--color-([a-z0-9-]+):\s*(#[0-9a-f]{6})\b/gi)) {
     tokens[match[1]] = match[2].toLowerCase();
   }
   return tokens;
 }
+
+const css = readFileSync(join(process.cwd(), "app", "globals.css"), "utf8");
+const DARK_START = css.indexOf('html[data-theme="dark"] {');
+const light = readTokens(css.slice(0, DARK_START));
+// The dark theme only re-assigns names, so anything it does not mention keeps its light value.
+const dark = { ...light, ...readTokens(css.slice(DARK_START)) };
 
 function luminance(hex: string): number {
   const [r, g, b] = [1, 3, 5]
@@ -25,9 +30,8 @@ export function contrast(a: string, b: string): number {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
-const tokens = readTokens();
-
 // [foreground, background, minimum ratio]. 4.5 for text, 3 for icons and control outlines.
+// The same pairs are checked for both themes.
 const PAIRS: [string, string, number][] = [
   ["text", "background", 4.5],
   ["text", "surface", 4.5],
@@ -78,7 +82,10 @@ const PAIRS: [string, string, number][] = [
   ["primary", "wash", 4.5],
 ];
 
-describe("design tokens", () => {
+describe.each([
+  ["light", light],
+  ["dark", dark],
+] as const)("design tokens (%s theme)", (_name, tokens) => {
   it("are all read from globals.css", () => {
     for (const [fg, bg] of PAIRS) {
       expect(tokens[fg], `--color-${fg}`).toBeDefined();
@@ -88,5 +95,21 @@ describe("design tokens", () => {
 
   it.each(PAIRS)("%s on %s meets %s:1", (fg, bg, minimum) => {
     expect(contrast(tokens[fg], tokens[bg])).toBeGreaterThanOrEqual(minimum);
+  });
+});
+
+describe("dark theme", () => {
+  it("redefines every color token the light theme has, so nothing stays light by accident", () => {
+    const missing = Object.keys(light).filter(
+      (name) => readTokens(css.slice(DARK_START))[name] === undefined,
+    );
+
+    expect(missing).toEqual([]);
+  });
+
+  it("is a real change, not a copy of the light colors", () => {
+    expect(dark.background).not.toBe(light.background);
+    expect(dark.text).not.toBe(light.text);
+    expect(contrast(dark.background, dark.text)).toBeGreaterThan(10);
   });
 });

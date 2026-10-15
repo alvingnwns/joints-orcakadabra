@@ -86,6 +86,16 @@ describe("AppShell navigation", () => {
     ]);
   });
 
+  it("puts the Dark mode button right next to Settings, in the header", () => {
+    renderShell();
+
+    const header = screen.getByRole("banner");
+    const toggle = within(header).getByRole("button", { name: "Dark mode" });
+    const settings = within(header).getByRole("button", { name: "Settings" });
+
+    expect(toggle.nextElementSibling).toBe(settings);
+  });
+
   it("keeps the skip link, one Settings button and the chat entry point in the shell", async () => {
     renderShell();
 

@@ -222,4 +222,6 @@ export const id: Dictionary = {
   suggestHint: "Saran AI berdasarkan tugasnya. Kamu yang memutuskan.",
   suggestError: "Kami belum bisa memperkirakan waktunya sekarang. Kamu bisa mengetiknya sendiri.",
   aiEstimate: "Perkiraan AI",
+  themeToggle: "Mode gelap",
+  dumpAnother: "Tambah curah pikiran lagi",
 };

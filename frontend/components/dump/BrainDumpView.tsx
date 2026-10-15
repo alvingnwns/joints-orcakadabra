@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { PenLine } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { BrainDumpInput } from "@/components/dump/BrainDumpInput";
 import { DraftReview, type EditableDraft } from "@/components/dump/DraftReview";
 import { useLocale } from "@/components/LocaleProvider";
-import { buttonClasses } from "@/components/ui/Button";
+import { Button, buttonClasses } from "@/components/ui/Button";
 import { Mascot } from "@/components/ui/Mascot";
 import { Notice } from "@/components/ui/Notice";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -37,6 +38,7 @@ export function BrainDumpView() {
   const [parseError, setParseError] = useState<ParseError>(null);
   const [drafts, setDrafts] = useState<EditableDraft[]>([]);
   const [saveFailed, setSaveFailed] = useState(false);
+  const [focusInput, setFocusInput] = useState(false); // true after "add another": cursor in the box
 
   async function handleParse() {
     setPhase("parsing");
@@ -75,6 +77,16 @@ export function BrainDumpView() {
     }
   }
 
+  /** After saving: a clean slate for the next brain dump, with the cursor ready in the box. */
+  function startAnother() {
+    setText("");
+    setDrafts([]);
+    setParseError(null);
+    setSaveFailed(false);
+    setFocusInput(true);
+    setPhase("input");
+  }
+
   const reviewing = phase === "review" || phase === "saving";
   // Adding by hand also needs the server, so it is only offered when the AI itself is the problem.
   const manualLink = parseError === "unavailable" || parseError === "invalid";
@@ -103,6 +115,7 @@ export function BrainDumpView() {
             onChange={setText}
             onSubmit={() => void handleParse()}
             busy={phase === "parsing"}
+            autoFocus={focusInput}
           />
           {parseError && parseError !== "none" && (
             <Notice
@@ -148,9 +161,14 @@ export function BrainDumpView() {
         <Notice
           tone="success"
           action={
-            <Link href="/" className={buttonClasses()}>
-              {t("draftsSeeToday")}
-            </Link>
+            <>
+              <Button variant="primary" icon={PenLine} onClick={startAnother}>
+                {t("dumpAnother")}
+              </Button>
+              <Link href="/" className={buttonClasses()}>
+                {t("draftsSeeToday")}
+              </Link>
+            </>
           }
         >
           {t("draftsSaved")}

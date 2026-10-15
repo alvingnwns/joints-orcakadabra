@@ -9,6 +9,7 @@ import { ChatPanel } from "@/components/chat/ChatPanel";
 import { ConnectionBanner } from "@/components/ConnectionBanner";
 import { useT } from "@/components/LocaleProvider";
 import { SettingsDialog } from "@/components/SettingsDialog";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Icon } from "@/components/ui/Icon";
 import { WorkspaceGate, WorkspaceState } from "@/components/WorkspaceProvider";
 import type { TranslationKey } from "@/lib/i18n/en";
@@ -75,7 +76,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             </ul>
           </nav>
 
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <ThemeToggle />
             <SettingsDialog />
           </div>
         </div>

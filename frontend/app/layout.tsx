@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 
 import { AppShell } from "@/components/AppShell";
 import { LocaleProvider } from "@/components/LocaleProvider";
+import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 import "./globals.css";
 
@@ -20,8 +21,11 @@ export const viewport: Viewport = { viewportFit: "cover" };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
+    <html lang="en" className={`${geistSans.variable} h-full antialiased`} suppressHydrationWarning>
+      {/* suppressHydrationWarning: this script sets data-theme before React starts. */}
       <body className="flex min-h-full flex-col">
+        {/* A plain inline script runs before the first paint (next/script would run too late). */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <LocaleProvider>
           <AppShell>{children}</AppShell>
         </LocaleProvider>

@@ -236,6 +236,55 @@ describe("BrainDumpView", () => {
     expect(bodyOf(fetchMock, "/tasks/bulk").tasks.map((t: { impact_score: number }) => t.impact_score)).toEqual([5, 3]);
   });
 
+  it("lets the person start another brain dump after saving, without reloading", async () => {
+    const fetchMock = fakeBackend([[draft("Call mum")], [draft("Buy milk")]]);
+    renderView();
+    await dump("call mum");
+    await userEvent.click(await screen.findByRole("button", { name: "Save these" }));
+    expect(await screen.findByRole("link", { name: "See today" })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Add another brain dump" }));
+
+    const box = screen.getByLabelText(/Everything on your mind/);
+    expect(box).toHaveValue(""); // the old text is gone
+    expect(box).toHaveFocus(); // ready to type
+    expect(screen.queryByLabelText("Task")).not.toBeInTheDocument(); // the old drafts are gone
+    expect(screen.queryByText(/Saved\. Your tasks/)).not.toBeInTheDocument();
+
+    await userEvent.type(box, "buy milk");
+    await userEvent.click(screen.getByRole("button", { name: "Sort it out for me" }));
+
+    expect(await screen.findByLabelText("Task")).toHaveValue("Buy milk");
+    const parses = fetchMock.mock.calls.filter(([url]) => url.includes("/tasks/parse"));
+    expect(parses).toHaveLength(2);
+    expect(JSON.parse(parses[1][1]!.body as string).text).toBe("buy milk"); // only the new text
+  });
+
+  it("offers the new brain dump only once something was saved", async () => {
+    fakeBackend([[draft("Call mum")]]);
+    renderView();
+
+    expect(screen.queryByRole("button", { name: "Add another brain dump" })).not.toBeInTheDocument();
+    await dump("call mum");
+    await screen.findByLabelText("Task");
+
+    expect(screen.queryByRole("button", { name: "Add another brain dump" })).not.toBeInTheDocument();
+  });
+
+  it("says it in Indonesian too", async () => {
+    localStorage.setItem("orca.locale", "id");
+    fakeBackend([[draft("Telepon ibu")]]);
+    renderView();
+    await userEvent.type(
+      await screen.findByLabelText(/Semua yang ada di pikiranmu/),
+      "telepon ibu",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Rapikan untukku" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Simpan semua" }));
+
+    expect(await screen.findByRole("button", { name: "Tambah curah pikiran lagi" })).toBeInTheDocument();
+  });
+
   it("says gently when no tasks were found", async () => {
     fakeBackend([422]);
     renderView();

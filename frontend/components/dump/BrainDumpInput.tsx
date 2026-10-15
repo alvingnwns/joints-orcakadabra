@@ -16,10 +16,12 @@ type Props = {
   onChange: (text: string) => void;
   onSubmit: () => void;
   busy: boolean;
+  /** Put the cursor in the box when it appears (e.g. for the next brain dump). */
+  autoFocus?: boolean;
 };
 
 /** A large, calm textarea. Submitting is disabled while it's empty or the AI is working. */
-export function BrainDumpInput({ text, onChange, onSubmit, busy }: Props) {
+export function BrainDumpInput({ text, onChange, onSubmit, busy, autoFocus }: Props) {
   const t = useT();
 
   function handleSubmit(event: FormEvent) {
@@ -40,6 +42,7 @@ export function BrainDumpInput({ text, onChange, onSubmit, busy }: Props) {
               maxLength={MAX_DUMP_LENGTH}
               rows={10}
               readOnly={busy}
+              autoFocus={autoFocus}
             />
           )}
         </Field>

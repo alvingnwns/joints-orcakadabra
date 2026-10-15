@@ -221,6 +221,8 @@ export const en = {
   suggestHint: "Suggested by AI from the task itself. You decide.",
   suggestError: "We couldn't work out a time just now. You can type one in.",
   aiEstimate: "AI estimate",
+  themeToggle: "Dark mode",
+  dumpAnother: "Add another brain dump",
 };
 
 export type TranslationKey = keyof typeof en;
