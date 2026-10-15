@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img">
+  <title>Orca thinking (placeholder mascot)</title>
+  <ellipse cx="60" cy="110" rx="34" ry="5" fill="#26332d" opacity=".10"/>
+  <g transform="rotate(-6 60 70)">
+    <path d="M60 24 C62 10 72 5 77 5 C73 13 71 19 71 27Z" fill="#26332d"/>
+    <ellipse cx="17" cy="80" rx="8" ry="14" transform="rotate(25 17 80)" fill="#1b2520"/>
+    <ellipse cx="100" cy="76" rx="8" ry="14" transform="rotate(-25 100 76)" fill="#1b2520"/>
+    <path d="M18 64 C18 38 40 22 64 22 C90 22 106 40 106 64 C106 90 86 106 62 106 C38 106 18 90 18 64Z" fill="#26332d"/>
+    <path d="M33 72 C33 58 46 52 62 52 C80 52 91 60 91 74 C91 92 77 100 62 100 C46 100 33 90 33 72Z" fill="#f8f7f2"/>
+    <ellipse cx="45" cy="46" rx="9.5" ry="6.5" transform="rotate(-12 45 46)" fill="#f8f7f2"/>
+    <ellipse cx="79" cy="46" rx="9.5" ry="6.5" transform="rotate(12 79 46)" fill="#f8f7f2"/>
+    <circle cx="48" cy="46" r="3.6" fill="#26332d"/><circle cx="80" cy="46" r="3.6" fill="#26332d"/>
+    <circle cx="49.2" cy="44.8" r="1.1" fill="#fff"/><circle cx="81.2" cy="44.8" r="1.1" fill="#fff"/>
+    <path d="M38 38 Q45 34 52 37" fill="none" stroke="#f8f7f2" stroke-width="2.2" stroke-linecap="round"/>
+    <circle cx="38" cy="66" r="5" fill="#f2a488" opacity=".45"/><circle cx="86" cy="66" r="5" fill="#f2a488" opacity=".45"/>
+    <ellipse cx="66" cy="70" rx="4" ry="3.2" fill="none" stroke="#26332d" stroke-width="2.4"/>
+  </g>
+  <g fill="#7c67b8"><circle cx="96" cy="14" r="3"/><circle cx="104" cy="8" r="4.2"/><circle cx="114" cy="3" r="5.2"/></g>
+</svg>

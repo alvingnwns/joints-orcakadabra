@@ -12,8 +12,7 @@ export default function NotFound() {
     <EmptyState
       className="mx-auto max-w-xl"
       tone="neutral"
-      illustration="oops"
-      illustrationWidth={200}
+      mascot="oops"
       title={t("notFoundTitle")}
       titleAs="h1"
       action={

@@ -47,9 +47,9 @@ Base URL: `NEXT_PUBLIC_API_URL` (local default `http://127.0.0.1:8000`). Interac
 
 `id`, `name` (always null, no endpoint sets it), `created_at`.
 
-### Constants
+### Daily capacity
 
-Daily capacity is a fixed 240 minutes (`DAILY_CAPACITY_MINUTES`). Users cannot change it yet (deferred as OPT6).
+Each workspace has its own `daily_capacity_minutes` (30 to 720 in steps of 15, default 240), changed from the Settings dialog. The Today and Week endpoints use it for the heavy-load rule and the load bars, and they report the value they used (`capacity_minutes`). Changing it never changes any task's priority.
 
 ---
 
@@ -63,7 +63,8 @@ All task and chat endpoints require `X-Workspace-Id`.
 |---|---|---|
 | `GET /health` | Liveness, used by the connection banner. | `{"status":"ok"}` |
 | `POST /workspaces` | Create a workspace. | 201 `{id, name, created_at}` |
-| `GET /workspaces/{id}` | Check a stored id still exists. | 200, or 404 |
+| `GET /workspaces/{id}` | Check a stored id still exists, and read its settings. | 200 `{id, name, daily_capacity_minutes, created_at}`, or 404 |
+| `PATCH /workspaces/{id}` | Change settings. Body `{daily_capacity_minutes}` (30 to 720, steps of 15). | 200 the workspace, 404, or 422 for a value outside the range |
 
 ### Tasks
 
@@ -97,6 +98,16 @@ Each `days[i]` and `unscheduled` is `{date (null for unscheduled), total_minutes
 | `POST /tasks/parse` | `{text (1..5000), today, locale}` | `{drafts:[{title, due_date, estimated_minutes, needs_confirmation, note}]}`, at most 20. Nothing is saved. | 422 `no_tasks_found`, 502 `ai_unavailable`, 502 `ai_invalid_output` |
 
 `needs_confirmation` is true when the AI guessed, or when a date is in the past. `note` is one short sentence in the user's language saying what to check.
+
+Every draft with a task gets a duration. `estimate_is_guess` is true when the AI worked it out itself (false when the text stated it), and `estimate_reason` is one short sentence in the user's language saying why. A guessed duration alone does not set `needs_confirmation`.
+
+### Duration estimate (AI)
+
+| Method and path | Request | Response | Errors |
+|---|---|---|---|
+| `POST /tasks/estimate` | `{title, description?, locale}` (description up to 2000 characters) | `{estimated_minutes (5 to 720, multiple of 5), estimate_reason}` | 502 `ai_unavailable` / `ai_invalid_output`, 422 invalid input |
+
+The AI reads the title and notes to judge what the task really involves. Nothing is saved; the person decides whether to use the number.
 
 ### Chat (AI)
 
@@ -182,7 +193,7 @@ Per-task controls (`TaskItem`): done checkbox, Delete (with inline confirmation)
 | Draft `needs_confirmation` and `note` | Highlighted card with note | Covered |
 | Chat with suggested questions, task-specific question | Slide-over panel | Covered. Chat is reachable from the top 3 cards only for task-specific questions. |
 | AI error handling | Brain dump: separate messages for "no tasks" and "unavailable". Chat: one generic message with retry. | Covered |
-| User-set daily capacity (OPT6) | None | Deferred. Capacity is fixed at 240 minutes and shown only as "x / 240 min" in the week bars. |
+| User-set daily capacity | Settings dialog (slider and presets) | Covered. Today, Week, the heavy-load notice and the chat all use the saved value. |
 | Workspace name | None | Unused field |
 | Motivational messages (OPT7/OPT8), attachments (OPT1), projects (OPT2), AI "make it smaller" (OPT3), time blocks (OPT4) | None | Not built, optional |
 | `source_type` (manual vs AI), `ai_summary` | None | Unused in UI; `ai_summary` is never written |

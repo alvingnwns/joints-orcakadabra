@@ -25,7 +25,7 @@ function renderActions(item: Task = task) {
   return handlers;
 }
 
-const more = () => screen.getByRole("button", { name: "More" });
+const more = () => screen.getByRole("button", { name: "Action" });
 const openMenu = () => userEvent.click(more());
 
 describe("localDate", () => {
@@ -113,6 +113,20 @@ describe("TaskActions", () => {
     expect(screen.getByRole("button", { name: "Edit details" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Delete" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Move to tomorrow" })).not.toBeInTheDocument();
+  });
+
+  it("shows Delete in red, and the menu button is called Action", async () => {
+    renderActions();
+
+    expect(screen.getByRole("button", { name: "Action" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "More" })).not.toBeInTheDocument();
+    await openMenu();
+
+    const remove = screen.getByRole("button", { name: "Delete" });
+    expect(remove).toHaveClass("bg-danger", "text-on-primary");
+    // The other choices stay calm, so only Delete is red.
+    expect(screen.getByRole("button", { name: "Edit details" })).not.toHaveClass("bg-danger");
+    expect(screen.getByRole("button", { name: "Move to tomorrow" })).not.toHaveClass("bg-danger");
   });
 
   it("lets a done task be edited or deleted, but not moved", async () => {

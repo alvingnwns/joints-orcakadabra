@@ -17,6 +17,8 @@ const draft = (title: string, extra: Partial<Draft> = {}): Draft => ({
   estimated_minutes: null,
   needs_confirmation: false,
   note: null,
+  estimate_is_guess: false,
+  estimate_reason: null,
   ...extra,
 });
 
@@ -191,6 +193,32 @@ describe("BrainDumpView", () => {
     expect(await screen.findByText("0 of 5000 characters")).toBeInTheDocument();
     await userEvent.type(screen.getByLabelText(/Everything on your mind/), "hello");
     expect(screen.getByText("5 of 5000 characters")).toBeInTheDocument();
+  });
+
+  it("shows the AI's estimate with its reason, and drops the reason once the number is changed", async () => {
+    fakeBackend([
+      [
+        draft("Call the bank", {
+          estimated_minutes: 15,
+          estimate_is_guess: true,
+          estimate_reason: "A phone call like this is usually short.",
+        }),
+        draft("Write the report", { estimated_minutes: 120 }),
+      ],
+    ]);
+    renderView();
+    await dump("call the bank, write the 2 hour report");
+
+    expect(await screen.findByText("A phone call like this is usually short.")).toBeInTheDocument();
+    expect(screen.getAllByText("AI estimate:")).toHaveLength(1); // not for the stated 2 hours
+    const [minutes] = screen.getAllByLabelText(/Time needed/);
+    expect(minutes).toHaveValue(15);
+    expect(minutes).toHaveAccessibleDescription(/A phone call like this is usually short/);
+
+    await userEvent.clear(minutes);
+    await userEvent.type(minutes, "20");
+
+    expect(screen.queryByText("A phone call like this is usually short.")).not.toBeInTheDocument();
   });
 
   it("marks every draft 'Not saved yet' and lets importance be chosen like for a manual task", async () => {

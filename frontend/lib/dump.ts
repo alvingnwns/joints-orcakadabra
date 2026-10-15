@@ -9,6 +9,9 @@ export type Draft = {
   estimated_minutes: number | null;
   needs_confirmation: boolean;
   note: string | null;
+  /** True when the AI worked the duration out itself; the reason says why. */
+  estimate_is_guess: boolean;
+  estimate_reason: string | null;
 };
 
 /** What the person can change on a draft. The AI never sets importance, so it starts at "matters". */

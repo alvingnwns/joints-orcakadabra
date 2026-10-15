@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { LoaderCircle } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { BrainDumpInput } from "@/components/dump/BrainDumpInput";
 import { DraftReview, type EditableDraft } from "@/components/dump/DraftReview";
 import { useLocale } from "@/components/LocaleProvider";
 import { buttonClasses } from "@/components/ui/Button";
-import { Icon } from "@/components/ui/Icon";
+import { Mascot } from "@/components/ui/Mascot";
 import { Notice } from "@/components/ui/Notice";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { ApiError } from "@/lib/api";
@@ -89,7 +88,9 @@ export function BrainDumpView() {
         role="status"
         className={phase === "parsing" ? "flex items-center gap-2 text-text-secondary" : "sr-only"}
       >
-        {phase === "parsing" && <Icon icon={LoaderCircle} className="motion-safe:animate-spin" />}
+        {phase === "parsing" && (
+          <Mascot mood="think" size={48} className="motion-safe:animate-pulse" />
+        )}
         {phase === "parsing" && t("dumpParsing")}
         {reviewing && t("draftsTitle")}
         {phase === "saved" && t("draftsSaved")}

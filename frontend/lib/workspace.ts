@@ -41,6 +41,23 @@ async function ensureWorkspaceUncached(): Promise<string> {
 
 let pending: Promise<string> | null = null;
 
+/** The workspace's own settings. (The server also returns the id and the creation time.) */
+export type WorkspaceSettings = { daily_capacity_minutes: number };
+
+export const CAPACITY_MIN = 30;
+export const CAPACITY_MAX = 720;
+export const CAPACITY_STEP = 15;
+export const CAPACITY_DEFAULT = 240;
+
+export const getWorkspaceSettings = (id: string) =>
+  apiFetch<WorkspaceSettings>(`/workspaces/${encodeURIComponent(id)}`);
+
+export const updateWorkspaceSettings = (id: string, changes: Partial<WorkspaceSettings>) =>
+  apiFetch<WorkspaceSettings>(`/workspaces/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(changes),
+  });
+
 /**
  * Returns the id of this browser's workspace: reuses the saved one, or creates a new one on the
  * first visit or when the saved one no longer exists. Calls that overlap (React dev mode runs

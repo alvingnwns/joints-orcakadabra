@@ -18,6 +18,7 @@ function renderShell() {
       const { pathname } = new URL(url);
       if (pathname === "/health") return json({ status: "ok" });
       if (pathname === "/workspaces") return json({ id: "ws1" }, 201);
+      if (pathname === "/workspaces/ws1") return json({ id: "ws1", daily_capacity_minutes: 240 });
       return json({});
     }),
   );
@@ -70,9 +71,10 @@ describe("AppShell navigation", () => {
     expect(nav.querySelectorAll("[aria-current]")).toHaveLength(1);
   });
 
-  it("renames the destinations when the language changes", async () => {
+  it("renames the destinations when the language changes in Settings", async () => {
     renderShell();
 
+    await userEvent.click(screen.getByRole("button", { name: "Settings" }));
     await userEvent.selectOptions(screen.getByLabelText("Language"), "id");
 
     const nav = screen.getByRole("navigation", { name: "Utama" });
@@ -84,14 +86,17 @@ describe("AppShell navigation", () => {
     ]);
   });
 
-  it("keeps the skip link, About and the chat entry point in the shell", async () => {
+  it("keeps the skip link, one Settings button and the chat entry point in the shell", async () => {
     renderShell();
 
     expect(screen.getByRole("link", { name: "Skip to main content" })).toHaveAttribute(
       "href",
       "#main",
     );
-    expect(screen.getByRole("button", { name: "About" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Settings" })).toBeInTheDocument();
+    // Language and About are no longer separate controls in the header.
+    expect(screen.queryByRole("button", { name: "About" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(await screen.findByRole("button", { name: "Ask about my schedule" })).toBeInTheDocument();
     expect(await screen.findByText("Page content")).toBeInTheDocument();
   });

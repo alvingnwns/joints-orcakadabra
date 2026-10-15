@@ -13,12 +13,12 @@ import {
 
 import { type Message, ChatMessage } from "@/components/chat/ChatMessage";
 import { SuggestedQuestions } from "@/components/chat/SuggestedQuestions";
-import { Illustration } from "@/components/illustrations/Illustration";
 import { useLocale } from "@/components/LocaleProvider";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Field";
 import { Icon } from "@/components/ui/Icon";
+import { Mascot } from "@/components/ui/Mascot";
 import { Notice } from "@/components/ui/Notice";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { ApiError } from "@/lib/api";
@@ -122,12 +122,15 @@ export function ChatPanel({ children }: { children: ReactNode }) {
 
       <Dialog open={open} onClose={() => setOpen(false)} labelledBy="chat-title" variant="side">
         <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between gap-3 border-b border-border p-4">
-            <div>
-              <h2 id="chat-title" className="text-section font-semibold">
-                {t("chatTitle")}
-              </h2>
-              <p className="text-sm text-text-secondary">{t("chatCaption")}</p>
+          <div className="flex items-center justify-between gap-3 border-b border-border bg-wash p-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <Mascot mood="hello" size={48} />
+              <div className="min-w-0">
+                <h2 id="chat-title" className="text-section font-bold">
+                  {t("chatTitle")}
+                </h2>
+                <p className="text-sm text-text-secondary">{t("chatCaption")}</p>
+              </div>
             </div>
             <Button icon={X} onClick={() => setOpen(false)}>
               {t("close")}
@@ -137,7 +140,7 @@ export function ChatPanel({ children }: { children: ReactNode }) {
           <div className="flex-1 space-y-4 overflow-y-auto p-4">
             {messages.length === 0 && (
               <div className="text-center">
-                <Illustration name="chat-helper" width={160} className="mb-3" />
+                <Mascot mood="hello" size={112} className="mx-auto mb-3" />
                 <p className="text-text-secondary">{t("chatEmpty")}</p>
               </div>
             )}
@@ -148,7 +151,11 @@ export function ChatPanel({ children }: { children: ReactNode }) {
               ))}
             </ul>
             {thinking && (
-              <p role="status" className="text-sm text-text-secondary motion-safe:animate-pulse">
+              <p
+                role="status"
+                className="flex items-center gap-2 text-sm text-text-secondary motion-safe:animate-pulse"
+              >
+                <Mascot mood="think" size={36} />
                 {t("chatThinking")}
               </p>
             )}

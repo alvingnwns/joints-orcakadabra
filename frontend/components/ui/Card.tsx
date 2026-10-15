@@ -5,12 +5,12 @@ import { cn } from "@/lib/cn";
 export type CardTone = "surface" | "muted" | "emphasis" | "attention";
 
 const TONES: Record<CardTone, string> = {
-  surface: "border border-border bg-surface",
+  surface: "border border-border bg-surface shadow-soft",
   muted: "border border-border bg-surface-muted",
-  // The one task to start with: a clear edge, not a heavier shadow.
-  emphasis: "border border-primary bg-surface ring-1 ring-primary",
+  // The one task to start with: a clear edge and a little lift, not a heavier border.
+  emphasis: "border border-primary bg-surface shadow-lift ring-1 ring-primary",
   // Something worth a second look (e.g. an AI guess), with a soft amber edge.
-  attention: "border border-attention-text/50 bg-surface",
+  attention: "border border-soon bg-surface shadow-soft",
 };
 
 type Props = Omit<ComponentProps<"div">, "ref"> & {

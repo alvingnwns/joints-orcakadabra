@@ -183,11 +183,11 @@ describe("TasksView (All tasks)", () => {
     expect(tab(/^Active/)).toHaveAttribute("aria-pressed", "true"); // tab kept
   });
 
-  it("edits and deletes from the list through the same More menu", async () => {
+  it("edits and deletes from the list through the same Action menu", async () => {
     fakeBackend([task("Report", { due_date: localDate(0) })]);
     renderView();
 
-    await userEvent.click(await screen.findByRole("button", { name: "More" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Action" }));
 
     expect(screen.getByRole("button", { name: "Edit details" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Delete" })).toBeInTheDocument();

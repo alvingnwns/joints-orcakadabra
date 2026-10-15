@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img">
+  <title>Orca a little worried (placeholder mascot)</title>
+  <ellipse cx="60" cy="110" rx="34" ry="5" fill="#26332d" opacity=".10"/>
+  <path d="M60 24 C62 10 72 5 77 5 C73 13 71 19 71 27Z" fill="#26332d"/>
+  <ellipse cx="17" cy="80" rx="8" ry="14" transform="rotate(25 17 80)" fill="#1b2520"/>
+  <ellipse cx="103" cy="80" rx="8" ry="14" transform="rotate(-25 103 80)" fill="#1b2520"/>
+  <path d="M18 64 C18 38 40 22 64 22 C90 22 106 40 106 64 C106 90 86 106 62 106 C38 106 18 90 18 64Z" fill="#26332d"/>
+  <path d="M33 72 C33 58 46 52 62 52 C80 52 91 60 91 74 C91 92 77 100 62 100 C46 100 33 90 33 72Z" fill="#f8f7f2"/>
+  <ellipse cx="45" cy="47" rx="9.5" ry="6.5" transform="rotate(-12 45 47)" fill="#f8f7f2"/>
+  <ellipse cx="79" cy="47" rx="9.5" ry="6.5" transform="rotate(12 79 47)" fill="#f8f7f2"/>
+  <circle cx="46" cy="49" r="3.6" fill="#26332d"/><circle cx="78" cy="49" r="3.6" fill="#26332d"/>
+  <circle cx="47.2" cy="47.8" r="1.1" fill="#fff"/><circle cx="79.2" cy="47.8" r="1.1" fill="#fff"/>
+  <path d="M38 41 Q45 44 52 39" fill="none" stroke="#f8f7f2" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M86 39 Q79 44 72 41" fill="none" stroke="#f8f7f2" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M54 72 Q62 66 70 72" fill="none" stroke="#26332d" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M96 30 C96 30 91 37 91 40.5 a5 5 0 0 0 10 0 C101 37 96 30 96 30Z" fill="#4f86b8"/>
+</svg>

@@ -1,13 +1,14 @@
 "use client";
 
-import { Ellipsis, Pencil, Trash2 } from "lucide-react";
-import { type FormEvent, useId, useRef, useState } from "react";
+import { ChevronDown, Pencil, Trash2 } from "lucide-react";
+import { type FormEvent, type ReactNode, useId, useRef, useState } from "react";
 
 import { useT } from "@/components/LocaleProvider";
 import { ConfirmDeleteDialog } from "@/components/tasks/ConfirmDeleteDialog";
 import { EditTaskDialog } from "@/components/tasks/EditTaskDialog";
 import { Button } from "@/components/ui/Button";
 import { Field, Input } from "@/components/ui/Field";
+import { Icon } from "@/components/ui/Icon";
 import type { TranslationKey } from "@/lib/i18n/en";
 import { type Task, type TaskChanges, localDate } from "@/lib/tasks";
 
@@ -19,14 +20,16 @@ type Props = {
   onUpdate: UpdateTask;
   onEdit: EditTask;
   onDelete: (task: Task) => void;
+  /** More buttons that sit next to Action, e.g. "Why is this here?". */
+  extra?: ReactNode;
 };
 type Mode = "closed" | "menu" | "pickDay";
 
 /**
- * One "More" menu per task: edit, move, save for later, delete. Moving and saving for later are
- * lightweight (they show a message with Undo); editing and deleting open a dialog.
+ * One "Action" menu per task: edit, move, save for later, delete. Moving and saving for later
+ * are lightweight (they show a message with Undo); editing and deleting open a dialog.
  */
-export function TaskActions({ task, onUpdate, onEdit, onDelete }: Props) {
+export function TaskActions({ task, onUpdate, onEdit, onDelete, extra }: Props) {
   const t = useT();
   const formId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -75,13 +78,18 @@ export function TaskActions({ task, onUpdate, onEdit, onDelete }: Props) {
         )}
         <Button
           ref={triggerRef}
-          icon={Ellipsis}
+          variant="secondary"
           aria-expanded={mode !== "closed"}
           aria-controls={`${formId}-panel`}
           onClick={() => setMode(mode === "closed" ? "menu" : "closed")}
         >
           {t("moreActions")}
+          <Icon
+            icon={ChevronDown}
+            className={mode === "closed" ? "transition-transform" : "rotate-180 transition-transform"}
+          />
         </Button>
+        {extra}
       </div>
 
       {mode !== "closed" && (
@@ -102,7 +110,7 @@ export function TaskActions({ task, onUpdate, onEdit, onDelete }: Props) {
                   </Button>
                 </>
               )}
-              <Button icon={Trash2} onClick={() => setDeleting(true)}>
+              <Button icon={Trash2} variant="destructive" onClick={() => setDeleting(true)}>
                 {t("deleteButton")}
               </Button>
             </div>

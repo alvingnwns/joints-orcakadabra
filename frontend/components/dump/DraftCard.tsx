@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Sparkles, Trash2 } from "lucide-react";
 
 import { useT } from "@/components/LocaleProvider";
 import { ImpactPicker } from "@/components/tasks/ImpactPicker";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Field, Input } from "@/components/ui/Field";
+import { Icon } from "@/components/ui/Icon";
 import { Notice } from "@/components/ui/Notice";
 import type { DraftFields } from "@/lib/dump";
 
@@ -58,7 +59,19 @@ export function DraftCard({ draft, onChange, onRemove }: Props) {
             />
           )}
         </Field>
-        <Field label={t("estimateLabel")}>
+        <Field
+          label={t("estimateLabel")}
+          hint={
+            draft.estimate_is_guess && draft.estimate_reason ? (
+              <span className="flex items-start gap-1.5">
+                <Icon icon={Sparkles} size={15} className="mt-0.5 shrink-0 text-primary" />
+                <span>
+                  <strong>{t("aiEstimate")}:</strong> {draft.estimate_reason}
+                </span>
+              </span>
+            ) : undefined
+          }
+        >
           {(control) => (
             <Input
               {...control}
@@ -72,6 +85,8 @@ export function DraftCard({ draft, onChange, onRemove }: Props) {
                 onChange({
                   ...draft,
                   estimated_minutes: event.target.value ? Number(event.target.value) : null,
+                  // Once the person changes the number, the AI's reason no longer applies.
+                  estimate_is_guess: false,
                 })
               }
             />

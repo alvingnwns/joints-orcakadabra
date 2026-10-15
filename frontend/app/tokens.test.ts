@@ -57,6 +57,25 @@ const PAIRS: [string, string, number][] = [
   ["border-strong", "background", 3],
   ["border-strong", "surface", 3],
   ["border-strong", "surface-muted", 3],
+  // Status colors: the word on its badge and tint, and the stripe/bar against the white card.
+  ["soon-text", "soon-badge", 4.5],
+  ["soon-text", "soon-soft", 4.5],
+  ["soon", "surface", 3],
+  ["whenever-text", "whenever-badge", 4.5],
+  ["whenever-text", "whenever-soft", 4.5],
+  ["whenever", "surface", 3],
+  ["later-text", "later-badge", 4.5],
+  ["later-text", "later-soft", 4.5],
+  ["later", "surface", 3],
+  ["done-text", "done-badge", 4.5],
+  ["done", "surface", 3],
+  ["warm-text", "warm-soft", 4.5],
+  ["warm", "surface", 3],
+  ["text-secondary", "warm-soft", 4.5],
+  ["text-secondary", "soon-soft", 4.5],
+  ["text", "wash", 4.5],
+  ["text-secondary", "wash", 4.5],
+  ["primary", "wash", 4.5],
 ];
 
 describe("design tokens", () => {

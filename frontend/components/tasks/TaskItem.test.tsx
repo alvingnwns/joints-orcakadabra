@@ -26,7 +26,8 @@ describe("TaskItem", () => {
     renderItem();
 
     expect(screen.getByRole("checkbox", { name: "Write report" })).not.toBeChecked();
-    expect(screen.getByText(/Due .*16/)).toHaveTextContent("90 min");
+    expect(screen.getByText(/^Due .*16/)).toBeInTheDocument();
+    expect(screen.getByText("90 min")).toBeInTheDocument();
   });
 
   it("marks a task done and undone through the checkbox", async () => {
@@ -101,11 +102,45 @@ describe("TaskItem", () => {
     expect(screen.queryByRole("button", { name: /Why is this here/ })).not.toBeInTheDocument();
   });
 
-  it("has no always-visible Delete button; delete lives in the More menu", async () => {
+  it.each([
+    ["focus", "Focus", "bg-primary", "bg-primary text-on-primary"],
+    ["soon", "Soon", "bg-soon", "bg-soon-badge"],
+    ["whenever", "Whenever", "bg-whenever", "bg-whenever-badge"],
+  ] as const)(
+    "gives a %s task its own color, word and edge so the three are easy to tell apart",
+    (label, word, edge, badge) => {
+      const { container } = renderItem({ ...task, priority_label: label });
+
+      const pill = screen.getByText(word);
+      expect(pill).toHaveClass(...badge.split(" "));
+      expect(pill.querySelector("svg")).not.toBeNull(); // an icon too, never color alone
+      expect(container.querySelector("li > span[aria-hidden]")).toHaveClass(edge);
+    },
+  );
+
+  it("marks a task saved for later in lilac and a finished one in sage", () => {
+    const { container, unmount } = renderItem({ ...task, status: "deferred" });
+    expect(screen.getByText("Later")).toHaveClass("bg-later-badge");
+    expect(container.querySelector("li > span[aria-hidden]")).toHaveClass("bg-later");
+    unmount();
+
+    const done = renderItem({ ...task, status: "done" });
+    expect(screen.getByText("Done")).toHaveClass("bg-done-badge");
+    expect(done.container.querySelector("li > span[aria-hidden]")).toHaveClass("bg-done");
+  });
+
+  it("shows the due date and the time as separate chips", () => {
+    renderItem({ ...task, priority_label: "soon" });
+
+    expect(screen.getByText(/^Due .*16/)).toHaveClass("rounded-full");
+    expect(screen.getByText("90 min")).toHaveClass("rounded-full");
+  });
+
+  it("has no always-visible Delete button; delete lives in the Action menu", async () => {
     renderItem();
 
     expect(screen.queryByRole("button", { name: "Delete" })).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "More" }));
+    await userEvent.click(screen.getByRole("button", { name: "Action" }));
     expect(screen.getByRole("button", { name: "Delete" })).toBeInTheDocument();
   });
 });

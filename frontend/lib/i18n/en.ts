@@ -10,8 +10,7 @@ export const en = {
   tryAgain: "Try again",
   workspaceLoading: "Getting your space ready…",
   workspaceError: "We couldn't set up your space just yet. Nothing is lost. Please try again.",
-
-  aboutButton: "About",
+  settingsButton: "Settings",
   aboutTitle: "About this app",
   aboutBody:
     "Orca helps you see one clear next step. Moving, shrinking, or skipping a task is always fine.",
@@ -53,7 +52,7 @@ export const en = {
   deleteYes: "Yes, delete",
   deleteKeep: "Keep it",
 
-  moreActions: "More",
+  moreActions: "Action",
   actionEdit: "Edit details",
   actionTomorrow: "Move to tomorrow",
   actionPickDay: "Pick another day",
@@ -110,7 +109,7 @@ export const en = {
   weekEmpty: "Your week is wide open. Nothing planned yet.",
   loadNone: "Nothing planned",
   loadLight: "Room to breathe",
-  loadBusy: "Fairly busy",
+  loadBusy: "Almost full",
   loadFull: "Full day",
   unscheduledTitle: "No date yet",
   dayEmpty: "Nothing planned for that day.",
@@ -197,6 +196,31 @@ export const en = {
   deletedNotice: "Task deleted.",
   undo: "Undo",
   undoneNotice: "Changed back.",
+  greetMorning: "Good morning",
+  greetAfternoon: "Good afternoon",
+  greetEvening: "Good evening",
+  greetLine: "Here's your day, one small step at a time.",
+  todayLoad: "Today's load",
+  addTaskTitle: "Add a task",
+
+  settingsTitle: "Settings",
+  settingsCapacityTitle: "Productive time each day",
+  settingsCapacityHint:
+    "How much work feels comfortable in one day? Your week and the full-day notice use this.",
+  settingsCapacityLabel: "Productive time per day",
+  settingsLoadError: "We couldn't load your settings just now. Nothing is lost.",
+  settingsSaveError: "We couldn't save that just yet. Please try again.",
+  settingsSaved: "Saved. Your days now fit {value}.",
+  hoursShort: "h",
+  statusDone: "Done",
+
+  suggestTime: "Suggest a time",
+  suggesting: "Thinking about it…",
+  suggestedTime: "Suggested: about {n} min",
+  suggestUse: "Use {n} min",
+  suggestHint: "Suggested by AI from the task itself. You decide.",
+  suggestError: "We couldn't work out a time just now. You can type one in.",
+  aiEstimate: "AI estimate",
 };
 
 export type TranslationKey = keyof typeof en;

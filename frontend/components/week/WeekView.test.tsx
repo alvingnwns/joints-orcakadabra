@@ -126,10 +126,11 @@ describe("WeekView", () => {
     fakeBackend([week({}, bucket(null, [scheduled("u", "Someday idea")], 30))]);
     renderView();
 
-    const section = (await screen.findByRole("heading", { name: "No date yet (1)" }))
-      .parentElement!;
+    const section = (await screen.findByRole("heading", { name: "No date yet (1)" })).closest(
+      "section",
+    )!;
     expect(within(section).getByLabelText(/Someday idea/)).toBeInTheDocument();
-    expect(within(section).getByRole("button", { name: "More" })).toBeInTheDocument();
+    expect(within(section).getByRole("button", { name: "Action" })).toBeInTheDocument();
   });
 
   it("reloads the week after an action", async () => {
@@ -138,7 +139,7 @@ describe("WeekView", () => {
     fakeBackend([before, after]);
     renderView();
 
-    await userEvent.click(await screen.findByRole("button", { name: "More" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Action" }));
     await userEvent.click(screen.getByRole("button", { name: "Move to tomorrow" }));
 
     expect(await screen.findByText(/Moved to tomorrow/)).toBeInTheDocument();
@@ -153,6 +154,51 @@ describe("WeekView", () => {
     await userEvent.click(screen.getByRole("button", { name: "Try again" }));
 
     expect(await screen.findByText(/Your week is wide open/)).toBeInTheDocument();
+  });
+
+  it("colors each day by how full it is, including the date, with a word for each", async () => {
+    fakeBackend([
+      week({
+        0: bucket(localDate(0), [scheduled("a", "Big")], 300, true), // over capacity: full
+        1: bucket(localDate(1), [scheduled("b", "Nearly")], 200), // 83 percent: almost full
+        2: bucket(localDate(2), [scheduled("c", "Small")], 60), // room to breathe
+      }),
+    ]);
+    renderView();
+
+    const full = await screen.findByRole("button", { name: /Today/ });
+    const almost = screen.getByRole("button", { name: /200 of 240/ });
+    const light = screen.getByRole("button", { name: /60 of 240/ });
+    const empty = screen.getAllByRole("button", { name: /Nothing planned/ })[0];
+    const dateOf = (day: HTMLElement) => day.querySelector("span.font-bold")!;
+
+    expect(full).toHaveClass("border-warm", "bg-warm-soft");
+    expect(dateOf(full)).toHaveClass("text-warm-text");
+    expect(full).toHaveTextContent("Full day");
+
+    expect(almost).toHaveClass("border-soon", "bg-soon-soft");
+    expect(dateOf(almost)).toHaveClass("text-soon-text");
+    expect(almost).toHaveTextContent("Almost full");
+
+    expect(light).toHaveClass("border-border", "bg-surface");
+    expect(dateOf(light)).toHaveClass("text-text");
+    expect(light).toHaveTextContent("Room to breathe");
+
+    expect(empty).toHaveTextContent("Nothing planned");
+    // The nearly-full and full days also carry an icon, so color is never the only signal.
+    expect(almost.querySelector("svg")).not.toBeNull();
+    expect(full.querySelector("svg")).not.toBeNull();
+  });
+
+  it("judges 'almost full' against the person's own daily time", async () => {
+    const bigDay = { ...week({ 1: bucket(localDate(1), [scheduled("a", "Long")], 200) }) };
+    fakeBackend([{ ...bigDay, capacity_minutes: 480 }]); // 200 of 480 is only 42 percent
+
+    renderView();
+
+    const day = await screen.findByRole("button", { name: /200 of 480 minutes/ });
+    expect(day).toHaveTextContent("Room to breathe");
+    expect(day).not.toHaveClass("bg-soon-soft");
   });
 
   it("counts the tasks on each day", async () => {

@@ -1,5 +1,6 @@
 "use client";
 
+import { CalendarDays, Leaf } from "lucide-react";
 import { useCallback, useState } from "react";
 
 import { LoadError, LoadingSkeleton } from "@/components/LoadStates";
@@ -8,9 +9,10 @@ import { QuickAddForm } from "@/components/tasks/QuickAddForm";
 import { TaskItem } from "@/components/tasks/TaskItem";
 import { TaskFeedback, useTaskActions } from "@/components/tasks/useTaskActions";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { SectionHeading } from "@/components/ui/SectionHeading";
 import { useLoad } from "@/components/useLoad";
 import { DayColumn } from "@/components/week/DayColumn";
-import { useWorkspace } from "@/components/WorkspaceProvider";
+import { useSettingsVersion, useWorkspace } from "@/components/WorkspaceProvider";
 import { formatDate } from "@/lib/i18n";
 import { type ScheduledTask, type WeekSchedule, getWeek } from "@/lib/schedule";
 import { type NewTask, createTask, localDate } from "@/lib/tasks";
@@ -21,7 +23,13 @@ type Handlers = ReturnType<typeof useTaskActions>["handlers"];
 export function WeekView() {
   const { t } = useLocale();
   const workspaceId = useWorkspace();
-  const fetcher = useCallback(() => getWeek(workspaceId, localDate(0)), [workspaceId]);
+  const settingsVersion = useSettingsVersion();
+  // settingsVersion: load again after the person changes their daily capacity.
+  const fetcher = useCallback(
+    () => getWeek(workspaceId, localDate(0)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [workspaceId, settingsVersion],
+  );
   const { state, reload, refresh } = useLoad(fetcher);
   const { handlers, feedback } = useTaskActions(refresh);
   const [selected, setSelected] = useState(0); // index into days; 0 is today
@@ -85,9 +93,9 @@ function WeekContent({ week, selected, onSelect, onAdd, handlers }: ContentProps
       </ul>
 
       <section aria-labelledby="day-tasks" className="mx-auto max-w-3xl space-y-3">
-        <h2 id="day-tasks" className="text-section font-semibold">
+        <SectionHeading id="day-tasks" icon={CalendarDays} tone="primary">
           {selected === 0 ? t("todayTitle") : formatDate(day.date!, locale)}
-        </h2>
+        </SectionHeading>
         {/* Keyed by day, so the form starts fresh (and pre-filled) when another day is picked. */}
         <QuickAddForm key={day.date} onAdd={onAdd} defaultDueDate={day.date!} />
         <TaskList tasks={day.tasks} empty={t("dayEmpty")} handlers={handlers} />
@@ -95,9 +103,9 @@ function WeekContent({ week, selected, onSelect, onAdd, handlers }: ContentProps
 
       {week.unscheduled.task_count > 0 && (
         <section aria-labelledby="unscheduled" className="mx-auto max-w-3xl space-y-3">
-          <h2 id="unscheduled" className="text-section font-semibold">
+          <SectionHeading id="unscheduled" icon={Leaf} tone="whenever">
             {t("unscheduledTitle")} ({week.unscheduled.task_count})
-          </h2>
+          </SectionHeading>
           <TaskList tasks={week.unscheduled.tasks} empty="" handlers={handlers} />
         </section>
       )}

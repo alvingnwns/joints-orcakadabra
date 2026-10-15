@@ -4,6 +4,7 @@ import { type FormEvent, useId, useState } from "react";
 
 import { useT } from "@/components/LocaleProvider";
 import { ImpactPicker } from "@/components/tasks/ImpactPicker";
+import { SuggestTime } from "@/components/tasks/SuggestTime";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { Field, Input, Textarea } from "@/components/ui/Field";
@@ -140,6 +141,12 @@ export function EditTaskDialog({ task, onSave, onClose }: Props) {
             />
           )}
         </Field>
+
+        <SuggestTime
+          title={title}
+          description={description}
+          onUse={(suggested) => setMinutes(String(suggested))}
+        />
 
         <ImpactPicker value={impact} onChange={setImpact} />
 

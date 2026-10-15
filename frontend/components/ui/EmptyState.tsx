@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { Illustration, type IllustrationName } from "@/components/illustrations/Illustration";
+import { Mascot, type MascotMood } from "@/components/ui/Mascot";
 import { cn } from "@/lib/cn";
 
 export type EmptyTone = "calm" | "neutral" | "error";
@@ -16,8 +17,11 @@ type Props = {
   title?: ReactNode;
   /** The heading level of the title; a page-level state (like "not found") should use h1. */
   titleAs?: "p" | "h1" | "h2" | "h3";
+  /** Small art for a calm empty state. */
   illustration?: IllustrationName;
   illustrationWidth?: number;
+  /** The mascot instead of art, for friendly moments (all done, something went wrong). */
+  mascot?: MascotMood;
   tone?: EmptyTone;
   /** A button or link: the next step the person can take. */
   action?: ReactNode;
@@ -32,6 +36,7 @@ export function EmptyState({
   titleAs: Title = "p",
   illustration,
   illustrationWidth = 180,
+  mascot,
   tone = "calm",
   action,
   role,
@@ -39,8 +44,12 @@ export function EmptyState({
 }: Props) {
   return (
     <div role={role} className={cn("rounded-card p-6 text-center", TONES[tone], className)}>
-      {illustration && (
-        <Illustration name={illustration} width={illustrationWidth} className="mb-4" />
+      {mascot ? (
+        <Mascot mood={mascot} size={112} className="mx-auto mb-3" />
+      ) : (
+        illustration && (
+          <Illustration name={illustration} width={illustrationWidth} className="mb-4" />
+        )
       )}
       {title && <Title className="text-section font-semibold">{title}</Title>}
       {text && <p className={title ? "mt-1" : undefined}>{text}</p>}

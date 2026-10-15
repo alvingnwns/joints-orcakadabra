@@ -5,6 +5,7 @@ import { type FormEvent, useRef, useState } from "react";
 
 import { useLocale } from "@/components/LocaleProvider";
 import { ImpactPicker } from "@/components/tasks/ImpactPicker";
+import { SuggestTime } from "@/components/tasks/SuggestTime";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Field, Input, Textarea } from "@/components/ui/Field";
@@ -128,6 +129,13 @@ export function QuickAddForm({ onAdd, defaultDueDate }: Props) {
                 />
               )}
             </Field>
+            <div className="sm:col-span-2">
+              <SuggestTime
+                title={title}
+                description={description}
+                onUse={(suggested) => setMinutes(String(suggested))}
+              />
+            </div>
             <div className="sm:col-span-2">
               <ImpactPicker value={impact} onChange={setImpact} />
             </div>

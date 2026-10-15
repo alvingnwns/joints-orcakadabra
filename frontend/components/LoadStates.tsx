@@ -25,8 +25,7 @@ export function LoadError({ message, onRetry }: { message: string; onRetry: () =
     <EmptyState
       role="alert"
       tone="error"
-      illustration="oops"
-      illustrationWidth={140}
+      mascot="oops"
       text={message}
       action={<Button onClick={onRetry}>{t("tryAgain")}</Button>}
     />

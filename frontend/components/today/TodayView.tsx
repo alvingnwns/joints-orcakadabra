@@ -1,5 +1,6 @@
 "use client";
 
+import { Check, ListChecks, Moon, Plus, Target } from "lucide-react";
 import { useCallback } from "react";
 
 import type { IllustrationName } from "@/components/illustrations/Illustration";
@@ -11,26 +12,44 @@ import { TaskItem } from "@/components/tasks/TaskItem";
 import { TaskFeedback, useTaskActions } from "@/components/tasks/useTaskActions";
 import { FocusCard } from "@/components/today/FocusCard";
 import { HeavyLoadNotice } from "@/components/today/HeavyLoadNotice";
+import { TodayHero } from "@/components/today/TodayHero";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Icon } from "@/components/ui/Icon";
+import { SectionHeading } from "@/components/ui/SectionHeading";
 import { useLoad } from "@/components/useLoad";
-import { useWorkspace } from "@/components/WorkspaceProvider";
-import { type TodaySchedule, getToday } from "@/lib/schedule";
+import { useSettingsVersion, useWorkspace } from "@/components/WorkspaceProvider";
+import {
+  type DayLoad,
+  type TodaySchedule,
+  getToday,
+  getWeek,
+} from "@/lib/schedule";
 import { type NewTask, type Task, createTask, listTasks, localDate } from "@/lib/tasks";
 
-type TodayData = { schedule: TodaySchedule; later: Task[]; doneToday: Task[] };
+type TodayData = {
+  schedule: TodaySchedule;
+  later: Task[];
+  doneToday: Task[];
+  /** Today's totals from the week schedule, for the load meter. Null if that call failed. */
+  day: DayLoad | null;
+  capacity: number | null;
+};
 type Handlers = ReturnType<typeof useTaskActions>["handlers"];
 
 /** The home screen: the next step first, then the rest of today, then what can wait. */
 export function TodayView() {
   const t = useT();
   const workspaceId = useWorkspace();
+  const settingsVersion = useSettingsVersion();
 
-  // The schedule gives the ranked active tasks; the plain list adds Later and Done today.
+  // The schedule gives the ranked active tasks; the plain list adds Later and Done today; the
+  // week gives today's load. The load meter is a nicety, so its failure never blocks the page.
   const fetcher = useCallback(async (): Promise<TodayData> => {
     const today = localDate(0);
-    const [schedule, all] = await Promise.all([
+    const [schedule, all, week] = await Promise.all([
       getToday(workspaceId, today),
       listTasks(workspaceId),
+      getWeek(workspaceId, today).catch(() => null),
     ]);
     return {
       schedule,
@@ -41,8 +60,12 @@ export function TodayView() {
           !!task.completed_at &&
           localDate(0, new Date(task.completed_at)) === today,
       ),
+      day: week?.days[0] ?? null,
+      capacity: week?.capacity_minutes ?? null,
     };
-  }, [workspaceId]);
+    // settingsVersion: load again after the person changes their daily capacity.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workspaceId, settingsVersion]);
 
   const { state, reload, refresh } = useLoad(fetcher);
   const { handlers, feedback } = useTaskActions(refresh);
@@ -52,17 +75,36 @@ export function TodayView() {
     await refresh();
   }
 
-  return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <h1 className="text-display font-semibold">{t("todayTitle")}</h1>
-      <QuickAddForm onAdd={handleAdd} />
-      <TaskFeedback {...feedback} />
+  const ready = state.status === "ready" ? state.data : null;
 
-      {state.status === "loading" && <LoadingSkeleton label={t("todayLoading")} />}
-      {state.status === "error" && (
-        <LoadError message={t("todayLoadError")} onRetry={() => void reload()} />
-      )}
-      {state.status === "ready" && <TodayContent data={state.data} handlers={handlers} />}
+  return (
+    <div className="mx-auto max-w-5xl space-y-6">
+      <TodayHero day={ready?.day ?? null} capacity={ready?.capacity ?? null} />
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_21rem]">
+        {/* Adding a task comes first on a phone, and sits beside the list on a wide screen. */}
+        <aside className="lg:sticky lg:top-6 lg:col-start-2 lg:row-start-1 lg:self-start">
+          <div className="mb-2 flex items-center gap-2.5 lg:hidden">
+            <span
+              aria-hidden="true"
+              className="flex size-8 items-center justify-center rounded-full bg-primary-soft text-primary"
+            >
+              <Icon icon={Plus} />
+            </span>
+            <p className="text-section font-bold">{t("addTaskTitle")}</p>
+          </div>
+          <QuickAddForm onAdd={handleAdd} />
+        </aside>
+
+        <div className="min-w-0 space-y-6 lg:col-start-1 lg:row-start-1">
+          <TaskFeedback {...feedback} />
+          {state.status === "loading" && <LoadingSkeleton label={t("todayLoading")} />}
+          {state.status === "error" && (
+            <LoadError message={t("todayLoadError")} onRetry={() => void reload()} />
+          )}
+          {ready && <TodayContent data={ready} handlers={handlers} />}
+        </div>
+      </div>
     </div>
   );
 }
@@ -73,9 +115,9 @@ function TodayContent({ data, handlers }: { data: TodayData; handlers: Handlers 
   const { top, rest, heavy_load, delay_suggestion } = schedule;
   const suggested =
     [...top, ...rest].find((task) => task.id === delay_suggestion?.task_id) ?? null;
-  // All done today → celebrate; no tasks anywhere yet → an empty list; otherwise a clear day.
-  const emptyIllustration: IllustrationName =
-    doneToday.length > 0 ? "all-done" : later.length === 0 ? "empty-tasks" : "day-clear";
+  // All done today → celebrate with the mascot; no tasks anywhere yet → an empty list; else a clear day.
+  const allDone = doneToday.length > 0;
+  const emptyIllustration: IllustrationName = later.length === 0 ? "empty-tasks" : "day-clear";
 
   return (
     <>
@@ -90,14 +132,15 @@ function TodayContent({ data, handlers }: { data: TodayData; handlers: Handlers 
 
       {top.length === 0 ? (
         <EmptyState
-          illustration={emptyIllustration}
-          text={t(doneToday.length > 0 ? "allDone" : "dayClear")}
+          mascot={allDone ? "happy" : undefined}
+          illustration={allDone ? undefined : emptyIllustration}
+          text={t(allDone ? "allDone" : "dayClear")}
         />
       ) : (
         <section aria-labelledby="start-here" className="space-y-3">
-          <h2 id="start-here" className="text-section font-semibold">
+          <SectionHeading id="start-here" icon={Target} tone="primary" count={top.length}>
             {t("startHere")}
-          </h2>
+          </SectionHeading>
           <ol className="space-y-3">
             {top.map((task, index) => (
               <FocusCard key={task.id} task={task} first={index === 0} {...handlers} />
@@ -108,9 +151,9 @@ function TodayContent({ data, handlers }: { data: TodayData; handlers: Handlers 
 
       {rest.length > 0 && (
         <section aria-labelledby="also-today" className="space-y-3">
-          <h2 id="also-today" className="text-section font-semibold">
+          <SectionHeading id="also-today" icon={ListChecks} tone="whenever" count={rest.length}>
             {t("alsoToday")}
-          </h2>
+          </SectionHeading>
           <ul className="space-y-3">
             {rest.map((task) => (
               <TaskItem key={task.id} task={task} {...handlers} />
@@ -119,9 +162,14 @@ function TodayContent({ data, handlers }: { data: TodayData; handlers: Handlers 
         </section>
       )}
 
-      <LaterList tasks={later} {...handlers} />
-      <LaterList tasks={doneToday} titleKey="doneTodayTitle" {...handlers} />
+      <LaterList tasks={later} icon={Moon} tone="later" {...handlers} />
+      <LaterList
+        tasks={doneToday}
+        titleKey="doneTodayTitle"
+        icon={Check}
+        tone="done"
+        {...handlers}
+      />
     </>
   );
 }
-

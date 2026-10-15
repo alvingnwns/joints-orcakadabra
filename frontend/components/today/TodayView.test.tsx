@@ -49,12 +49,23 @@ function fakeBackend(initial: Task[], options: Options = {}) {
       });
     }
     if (pathname === "/tasks" && method === "GET") return json(tasks);
+    if (pathname === "/tasks/week") {
+      // Today's load meter. The numbers come from the backend, so the fake just supplies some.
+      const day = { date: searchParams.get("today"), total_minutes: 120, task_count: 1, is_heavy: false, tasks: [] };
+      return json({
+        today: searchParams.get("today"),
+        capacity_minutes: 240,
+        days: [day],
+        unscheduled: { ...day, date: null, total_minutes: 0, task_count: 0 },
+      });
+    }
     if (pathname === "/tasks" && method === "POST") {
       const created = task(`t${tasks.length + 1}`, JSON.parse(init?.body as string).title);
       tasks.push(created);
       return json(created, 201);
     }
-    const found = tasks.find((item) => pathname === `/tasks/${item.id}`)!;
+    const found = tasks.find((item) => pathname === `/tasks/${item.id}`);
+    if (!found) return json({ detail: "not found" }, 404); // never fall through to a delete
     if (method === "PATCH") {
       if (options.failPatch) return json({ detail: "nope" }, 500);
       const changes = JSON.parse(init?.body as string);
@@ -87,6 +98,42 @@ describe("TodayView", () => {
   beforeEach(() => localStorage.clear());
   afterEach(() => vi.unstubAllGlobals());
 
+  it("greets with the mascot, today's date and how full the day is", async () => {
+    fakeBackend([task("a", "Open")]);
+    renderView();
+
+    await screen.findByText("Today's load"); // the meter fills in once the numbers arrive
+    const hero = screen.getByRole("heading", { level: 1, name: "Today" }).closest("section")!;
+    expect(hero).toHaveTextContent(/Good (morning|afternoon|evening)/);
+    expect(hero).toHaveTextContent("120 of 240 minutes"); // the backend's own totals
+    expect(hero.querySelector('img[src$="/mascot/hello.svg"]')).not.toBeNull();
+    expect(hero.querySelector("img")).toHaveAttribute("alt", ""); // decorative
+  });
+
+  it("still shows the day when the load numbers can't be loaded", async () => {
+    const fetchMock = fakeBackend([task("a", "Open")]);
+    const base = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (url: string, init?: RequestInit) =>
+      new URL(url).pathname === "/tasks/week" ? json({ detail: "x" }, 500) : base(url, init),
+    );
+    renderView();
+
+    expect(await screen.findByLabelText(/Open/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Today" })).toBeInTheDocument();
+    expect(screen.queryByText("Today's load")).not.toBeInTheDocument();
+  });
+
+  it("puts adding a task first, then the sections with colored headings and counts", async () => {
+    fakeBackend([task("a", "First"), task("b", "Second"), task("c", "Third"), task("d", "Fourth")]);
+    renderView();
+
+    const start = await screen.findByRole("heading", { name: "Start here" });
+    expect(start.parentElement).toHaveTextContent("3"); // how many are in the section
+    expect(screen.getByRole("heading", { name: "Also today" }).parentElement).toHaveTextContent("1");
+    const add = screen.getByLabelText("What's one thing to do?");
+    expect(add.compareDocumentPosition(start) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it("shows a clear day, then the new task after adding one", async () => {
     const fetchMock = fakeBackend([]);
     renderView();
@@ -107,8 +154,10 @@ describe("TodayView", () => {
     fakeBackend([task("a", "First"), task("b", "Second"), task("c", "Third"), task("d", "Fourth")]);
     renderView();
 
-    const startHere = (await screen.findByRole("heading", { name: "Start here" })).parentElement!;
-    const alsoToday = screen.getByRole("heading", { name: "Also today" }).parentElement!;
+    const startHere = (await screen.findByRole("heading", { name: "Start here" })).closest(
+      "section",
+    )!;
+    const alsoToday = screen.getByRole("heading", { name: "Also today" }).closest("section")!;
     expect(startHere).toHaveTextContent(/First.*Second.*Third/);
     expect(startHere).not.toHaveTextContent("Fourth");
     expect(alsoToday).toHaveTextContent("Fourth");
@@ -122,7 +171,8 @@ describe("TodayView", () => {
 
     expect(await screen.findByText(/That's everything for today/)).toBeInTheDocument();
     expect(screen.getByText("Done today (1)")).toBeInTheDocument();
-    expect(shownIllustrations(document.body).sort()).toEqual(["all-done", "celebrate"]);
+    expect(shownIllustrations(document.body)).toEqual(["celebrate"]); // the toast's check burst
+    expect(document.querySelector('img[src$="/mascot/happy.svg"]')).not.toBeNull(); // the mascot cheers
     // The toast has one short encouraging line from the small set.
     expect(screen.getByRole("status")).toHaveTextContent(
       /Done\. That counts\.|one less thing to carry|One small step, done\./,
@@ -172,7 +222,7 @@ describe("TodayView", () => {
     ]);
     renderView();
 
-    await userEvent.click(await screen.findByRole("button", { name: "More" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Action" }));
     await userEvent.click(screen.getByRole("button", { name: "Delete" }));
     await userEvent.click(screen.getByRole("button", { name: "Yes, delete" }));
     expect(await screen.findByText("Task deleted.")).toBeInTheDocument();
@@ -195,7 +245,7 @@ describe("TodayView", () => {
     fakeBackend([task("a", "Open")]);
     renderView();
 
-    await userEvent.click(await screen.findByRole("button", { name: "More" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Action" }));
     await userEvent.click(screen.getByRole("button", { name: "Not today, save for later" }));
 
     // The task left "Start here" (its buttons are gone), so focus moves to the toast.
@@ -255,11 +305,11 @@ describe("TodayView", () => {
     expect(cards[1]).toHaveTextContent("Not due today, but it ranks high");
   });
 
-  it("edits a task from the More menu, shows the result and offers Undo", async () => {
+  it("edits a task from the Action menu, shows the result and offers Undo", async () => {
     const fetchMock = fakeBackend([task("a", "Report", { description: "Old notes" })]);
     renderView();
 
-    await userEvent.click(await screen.findByRole("button", { name: "More" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Action" }));
     await userEvent.click(screen.getByRole("button", { name: "Edit details" }));
     const title = screen.getByLabelText("Task");
     await userEvent.clear(title);
@@ -283,7 +333,7 @@ describe("TodayView", () => {
     fakeBackend([task("a", "Report")], { failPatch: true });
     renderView();
 
-    await userEvent.click(await screen.findByRole("button", { name: "More" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Action" }));
     await userEvent.click(screen.getByRole("button", { name: "Edit details" }));
     await userEvent.type(screen.getByLabelText("Task"), " v2");
     await userEvent.click(screen.getByRole("button", { name: "Save" }));
@@ -316,7 +366,7 @@ describe("TodayView", () => {
     renderView();
 
     expect(await screen.findByText(/couldn't load your day/)).toBeInTheDocument();
-    expect(shownIllustrations(document.body)).toEqual(["oops"]);
+    expect(document.querySelector('img[src$="/mascot/oops.svg"]')).not.toBeNull(); // the mascot, a little worried
     await userEvent.click(screen.getByRole("button", { name: "Try again" }));
 
     expect(await screen.findByLabelText(/Open/)).toBeInTheDocument();
