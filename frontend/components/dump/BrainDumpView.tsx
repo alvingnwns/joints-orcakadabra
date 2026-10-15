@@ -7,6 +7,8 @@ import { BrainDumpInput } from "@/components/dump/BrainDumpInput";
 import { DraftReview, type EditableDraft } from "@/components/dump/DraftReview";
 import { Illustration } from "@/components/illustrations/Illustration";
 import { useLocale } from "@/components/LocaleProvider";
+import { buttonClasses } from "@/components/ui/Button";
+import { Notice } from "@/components/ui/Notice";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { ApiError } from "@/lib/api";
 import { parseBrainDump, saveDrafts } from "@/lib/dump";
@@ -14,9 +16,6 @@ import { localDate } from "@/lib/tasks";
 
 type Phase = "input" | "parsing" | "review" | "saving" | "saved";
 type ParseError = "ai" | "none" | null;
-
-const linkClass =
-  "inline-flex min-h-11 items-center rounded-full border border-ink px-4 font-medium hover:bg-surface";
 
 /** Brain dump → AI drafts → review → save. The typed text is never lost on an error. */
 export function BrainDumpView() {
@@ -69,10 +68,10 @@ export function BrainDumpView() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">{t("dumpTitle")}</h1>
+      <h1 className="text-display font-semibold">{t("dumpTitle")}</h1>
 
       {/* Announces progress and results to screen readers. */}
-      <p role="status" className={phase === "parsing" ? "text-muted" : "sr-only"}>
+      <p role="status" className={phase === "parsing" ? "text-text-secondary" : "sr-only"}>
         {phase === "parsing" && t("dumpParsing")}
         {reviewing && t("draftsTitle")}
         {phase === "saved" && t("draftsSaved")}
@@ -92,18 +91,18 @@ export function BrainDumpView() {
             busy={phase === "parsing"}
           />
           {parseError === "ai" && (
-            <div role="alert" className="rounded-card bg-peach p-4">
-              <p>{t("dumpAiError")}</p>
-              <Link href="/" className={`mt-3 ${linkClass}`}>
-                {t("dumpManual")}
-              </Link>
-            </div>
+            <Notice
+              tone="error"
+              action={
+                <Link href="/" className={buttonClasses()}>
+                  {t("dumpManual")}
+                </Link>
+              }
+            >
+              {t("dumpAiError")}
+            </Notice>
           )}
-          {parseError === "none" && (
-            <p role="alert" className="rounded-card bg-peach p-4">
-              {t("dumpNoTasks")}
-            </p>
-          )}
+          {parseError === "none" && <Notice tone="error">{t("dumpNoTasks")}</Notice>}
         </>
       )}
 
@@ -124,12 +123,16 @@ export function BrainDumpView() {
       )}
 
       {phase === "saved" && (
-        <div className="rounded-card bg-mint p-4">
-          <p>{t("draftsSaved")}</p>
-          <Link href="/" className={`mt-3 ${linkClass}`}>
-            {t("draftsSeeToday")}
-          </Link>
-        </div>
+        <Notice
+          tone="success"
+          action={
+            <Link href="/" className={buttonClasses()}>
+              {t("draftsSeeToday")}
+            </Link>
+          }
+        >
+          {t("draftsSaved")}
+        </Notice>
       )}
     </div>
   );

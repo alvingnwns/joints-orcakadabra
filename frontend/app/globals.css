@@ -1,25 +1,67 @@
 @import "tailwindcss";
 
-/* Design tokens: warm and calm, matching the illustrations in assets/illustrations. */
+/*
+ * Design tokens: "Calm Intelligence" (warm minimalism).
+ *
+ * Every color and size in the app comes from this block. Components use the generated utilities
+ * (bg-surface, text-text-secondary, rounded-card, ...) and never hard-code a value.
+ *
+ * Contrast is guarded by app/tokens.test.ts. Values from the brief that failed WCAG AA were
+ * adjusted: secondary text (was #737b76), and form-control borders (the light --color-border
+ * stays for dividers only; --color-border-strong is used on controls). Danger text and hover
+ * shades were added to keep red text readable.
+ */
 @theme {
-  --color-cream: #fbf7f0; /* page background */
-  --color-surface: #ffffff; /* cards, header */
-  --color-ink: #2b3a55; /* main text, outlines (navy from the illustrations) */
-  --color-muted: #5b6478; /* secondary text, AA contrast on cream and white */
-  --color-line: #e8e1d5; /* borders */
-  --color-peach: #fde4d0; /* gentle notices */
-  --color-mint: #d9f0e6; /* success */
-  --color-sky: #dbe8f7; /* info, focus accents */
+  /* Surfaces */
+  --color-background: #f8f7f2; /* page */
+  --color-surface: #ffffff; /* cards, header, inputs */
+  --color-surface-muted: #f1f2ec; /* quiet panels, hover */
 
-  --radius-card: 1rem;
+  /* Brand */
+  --color-primary: #315c4c;
+  --color-primary-hover: #264a3d;
+  --color-primary-soft: #dce8d8; /* selected, success, calm panels */
+  --color-on-primary: #ffffff; /* text and icons on primary, danger, and dark surfaces */
+
+  /* Text */
+  --color-text: #26332d;
+  --color-text-secondary: #5f6762; /* AA on background, surface, surface-muted, primary-soft */
+
+  /* Lines */
+  --color-border: #e4e7df; /* dividers and card edges only (decorative) */
+  --color-border-strong: #7f8782; /* form controls and outlined buttons (3:1 for UI parts) */
+  --color-focus: #315c4c;
+
+  /* Status: amber needs attention but is not a failure; red is only for errors and deletes */
+  --color-attention: #f5e8c8;
+  --color-attention-text: #694e17;
+  --color-danger: #b54747;
+  --color-danger-hover: #9a3b3b;
+  --color-danger-soft: #f4deda;
+  --color-danger-text: #8e2f2f;
+  --color-success: #315c4c;
+
+  /* Type */
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --text-display: clamp(1.5rem, 1.3rem + 0.8vw, 2rem); /* page heading: 24 to 32 px */
+  --text-display--line-height: 1.2;
+  --text-section: 1.125rem; /* section heading: 18 px */
+  --text-section--line-height: 1.4;
+  --text-meta: 0.8125rem; /* smallest allowed text: 13 px */
+  --text-meta--line-height: 1.45;
+  /* Body is Tailwind's text-base (16 px); secondary text is text-sm (14 px). */
 
-  /* A soft "pop" for toasts and the completion check (CP17). */
-  --animate-pop: pop 300ms ease-out;
+  /* Shape: spacing uses Tailwind's 4 px scale (p-3, p-4, p-6, ...) */
+  --radius-control: 0.75rem; /* buttons, inputs, badges: 12 px */
+  --radius-card: 1rem; /* 16 px */
+  --radius-dialog: 1.25rem; /* 20 px */
+
+  /* A soft "pop" for toasts and the completion check. */
+  --animate-pop: pop 200ms ease-out;
   @keyframes pop {
     from {
       opacity: 0;
-      transform: scale(0.85);
+      transform: scale(0.9);
     }
     to {
       opacity: 1;
@@ -35,24 +77,30 @@ summary {
   transition:
     background-color 150ms ease,
     color 150ms ease,
+    border-color 150ms ease,
     transform 100ms ease;
 }
 @media (prefers-reduced-motion: no-preference) {
   button:not(:disabled):active,
   a:active {
-    transform: scale(0.97);
+    transform: scale(0.98);
   }
 }
 
 body {
-  background: var(--color-cream);
-  color: var(--color-ink);
+  background: var(--color-background);
+  color: var(--color-text);
   font-family: var(--font-sans);
+}
+
+::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 1;
 }
 
 /* Visible keyboard focus everywhere. */
 :focus-visible {
-  outline: 3px solid var(--color-ink);
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 

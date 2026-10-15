@@ -1,0 +1,73 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+import { describe, expect, it } from "vitest";
+
+/** Reads the --color-* tokens straight from globals.css, so the test cannot drift from the app. */
+function readTokens(): Record<string, string> {
+  const css = readFileSync(join(process.cwd(), "app", "globals.css"), "utf8");
+  const tokens: Record<string, string> = {};
+  for (const match of css.matchAll(/--color-([a-z-]+):\s*(#[0-9a-f]{6})\b/gi)) {
+    tokens[match[1]] = match[2].toLowerCase();
+  }
+  return tokens;
+}
+
+function luminance(hex: string): number {
+  const [r, g, b] = [1, 3, 5]
+    .map((start) => parseInt(hex.slice(start, start + 2), 16) / 255)
+    .map((value) => (value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+export function contrast(a: string, b: string): number {
+  const [lighter, darker] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+const tokens = readTokens();
+
+// [foreground, background, minimum ratio]. 4.5 for text, 3 for icons and control outlines.
+const PAIRS: [string, string, number][] = [
+  ["text", "background", 4.5],
+  ["text", "surface", 4.5],
+  ["text", "surface-muted", 4.5],
+  ["text", "primary-soft", 4.5],
+  ["text", "danger-soft", 4.5],
+  ["text-secondary", "background", 4.5],
+  ["text-secondary", "surface", 4.5],
+  ["text-secondary", "surface-muted", 4.5],
+  ["text-secondary", "primary-soft", 4.5],
+  ["on-primary", "primary", 4.5],
+  ["on-primary", "primary-hover", 4.5],
+  ["on-primary", "danger", 4.5],
+  ["on-primary", "danger-hover", 4.5],
+  ["on-primary", "text", 4.5], // toast: light text on the dark surface
+  ["primary", "background", 4.5], // primary used as text
+  ["primary", "surface", 4.5],
+  ["primary", "primary-soft", 4.5],
+  ["attention-text", "attention", 4.5],
+  ["attention-text", "background", 4.5],
+  ["danger-text", "danger-soft", 4.5],
+  ["danger-text", "surface", 4.5],
+  ["danger", "danger-soft", 3], // danger icon on its soft surface
+  ["focus", "background", 3],
+  ["focus", "surface", 3],
+  ["on-primary", "text", 3], // focus ring on the dark toast
+  ["border-strong", "background", 3],
+  ["border-strong", "surface", 3],
+  ["border-strong", "surface-muted", 3],
+];
+
+describe("design tokens", () => {
+  it("are all read from globals.css", () => {
+    for (const [fg, bg] of PAIRS) {
+      expect(tokens[fg], `--color-${fg}`).toBeDefined();
+      expect(tokens[bg], `--color-${bg}`).toBeDefined();
+    }
+  });
+
+  it.each(PAIRS)("%s on %s meets %s:1", (fg, bg, minimum) => {
+    expect(contrast(tokens[fg], tokens[bg])).toBeGreaterThanOrEqual(minimum);
+  });
+});

@@ -1,8 +1,12 @@
 "use client";
 
+import { Sparkles } from "lucide-react";
 import type { FormEvent } from "react";
 
 import { useT } from "@/components/LocaleProvider";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { Field, Textarea } from "@/components/ui/Field";
 
 export const MAX_DUMP_LENGTH = 5000; // same limit as the backend
 
@@ -23,31 +27,32 @@ export function BrainDumpInput({ text, onChange, onSubmit, busy }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-card bg-surface p-4 shadow-sm">
-      <label htmlFor="brain-dump" className="block font-medium">
-        {t("dumpLabel")}
-      </label>
-      <p id="brain-dump-hint" className="mt-1 text-sm text-muted">
-        {t("dumpHint")}
-      </p>
-      <textarea
-        id="brain-dump"
-        aria-describedby="brain-dump-hint"
-        value={text}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={t("dumpPlaceholder")}
-        maxLength={MAX_DUMP_LENGTH}
-        rows={8}
-        readOnly={busy}
-        className="mt-3 w-full rounded-xl border border-muted bg-surface p-3"
-      />
-      <button
-        type="submit"
-        disabled={busy || !text.trim()}
-        className="mt-3 min-h-11 rounded-full bg-ink px-5 font-medium text-cream disabled:opacity-50"
-      >
-        {t("dumpSubmit")}
-      </button>
-    </form>
+    <Card>
+      <form onSubmit={handleSubmit}>
+        <Field label={t("dumpLabel")} hint={t("dumpHint")}>
+          {(control) => (
+            <Textarea
+              {...control}
+              value={text}
+              onChange={(event) => onChange(event.target.value)}
+              placeholder={t("dumpPlaceholder")}
+              maxLength={MAX_DUMP_LENGTH}
+              rows={8}
+              readOnly={busy}
+            />
+          )}
+        </Field>
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          icon={Sparkles}
+          disabled={busy || !text.trim()}
+          className="mt-3"
+        >
+          {t("dumpSubmit")}
+        </Button>
+      </form>
+    </Card>
   );
 }

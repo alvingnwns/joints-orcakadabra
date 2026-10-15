@@ -2,6 +2,8 @@
 
 import { useT } from "@/components/LocaleProvider";
 import { DraftCard } from "@/components/dump/DraftCard";
+import { Button } from "@/components/ui/Button";
+import { Notice } from "@/components/ui/Notice";
 import type { Draft } from "@/lib/dump";
 
 export type EditableDraft = Draft & { key: number }; // stable React key while editing
@@ -24,14 +26,14 @@ export function DraftReview({ drafts, onChange, onRemove, onSave, onBack, saving
   return (
     <section aria-labelledby="drafts-title" className="space-y-4">
       <div>
-        <h2 id="drafts-title" className="text-lg font-semibold">
+        <h2 id="drafts-title" className="text-section font-semibold">
           {t("draftsTitle")}
         </h2>
-        <p className="text-sm text-muted">{t("draftsIntro")}</p>
+        <p className="text-sm text-text-secondary">{t("draftsIntro")}</p>
       </div>
 
       {drafts.length === 0 ? (
-        <p className="text-muted">{t("draftsNoneLeft")}</p>
+        <p className="text-text-secondary">{t("draftsNoneLeft")}</p>
       ) : (
         <ul className="space-y-3">
           {drafts.map((draft) => (
@@ -45,28 +47,13 @@ export function DraftReview({ drafts, onChange, onRemove, onSave, onBack, saving
         </ul>
       )}
 
-      {saveFailed && (
-        <p role="alert" className="rounded-xl bg-peach px-3 py-2 text-sm">
-          {t("draftsSaveError")}
-        </p>
-      )}
+      {saveFailed && <Notice tone="error">{t("draftsSaveError")}</Notice>}
 
       <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={onSave}
-          disabled={!canSave}
-          className="min-h-11 rounded-full bg-ink px-5 font-medium text-cream disabled:opacity-50"
-        >
+        <Button variant="primary" onClick={onSave} disabled={!canSave}>
           {t("draftsSave")}
-        </button>
-        <button
-          type="button"
-          onClick={onBack}
-          className="min-h-11 rounded-full border border-ink px-5 font-medium hover:bg-surface"
-        >
-          {t("draftsBack")}
-        </button>
+        </Button>
+        <Button onClick={onBack}>{t("draftsBack")}</Button>
       </div>
     </section>
   );

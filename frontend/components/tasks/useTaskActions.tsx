@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { type ToastMessage, Toast } from "@/components/feedback/Toast";
 import { useT } from "@/components/LocaleProvider";
+import { Notice } from "@/components/ui/Notice";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import type { TranslationKey } from "@/lib/i18n/en";
 import {
@@ -120,11 +121,7 @@ export function TaskFeedback({ toast, failed, onUndo, onDismiss }: FeedbackProps
   return (
     <>
       <Toast toast={toast} onUndo={onUndo} onDismiss={onDismiss} />
-      {failed && (
-        <p role="alert" className="rounded-xl bg-peach px-3 py-2 text-sm">
-          {t("taskActionError")}
-        </p>
-      )}
+      {failed && <Notice tone="error">{t("taskActionError")}</Notice>}
     </>
   );
 }

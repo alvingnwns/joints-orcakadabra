@@ -1,8 +1,11 @@
 "use client";
 
+import { Trash2 } from "lucide-react";
 import { type ReactNode, useId, useState } from "react";
 
 import { useLocale } from "@/components/LocaleProvider";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { formatDate } from "@/lib/i18n";
 import type { Task } from "@/lib/tasks";
 
@@ -19,8 +22,6 @@ type Props = {
   children?: ReactNode;
 };
 
-const buttonClass = "min-h-11 rounded-full border border-ink px-4 text-sm font-medium hover:bg-cream";
-
 export function TaskItem({
   task,
   onToggle,
@@ -35,23 +36,24 @@ export function TaskItem({
   const done = task.status === "done";
 
   return (
-    <li
-      className={`rounded-card bg-surface p-4 ${emphasis ? "shadow-md ring-2 ring-ink" : "shadow-sm"}`}
-    >
+    <Card as="li" tone={emphasis ? "emphasis" : "surface"}>
       <div className="flex items-start justify-between gap-3">
         <label className="flex min-h-11 flex-1 cursor-pointer items-start gap-3">
           <input
             type="checkbox"
             checked={done}
             onChange={() => onToggle(task)}
-            className="mt-1 size-6 shrink-0"
+            className="mt-1 size-6 shrink-0 accent-primary"
           />
           <span>
-            <span id={titleId} className={done ? "text-muted line-through" : "font-medium"}>
+            <span
+              id={titleId}
+              className={done ? "text-text-secondary line-through" : "font-medium"}
+            >
               {task.title}
             </span>
             {(task.due_date || task.estimated_minutes) && (
-              <span className="mt-1 block text-sm text-muted">
+              <span className="mt-1 block text-sm text-text-secondary">
                 {task.due_date && `${t("dueLabel")} ${formatDate(task.due_date, locale)}`}
                 {task.due_date && task.estimated_minutes && " · "}
                 {task.estimated_minutes && `${task.estimated_minutes} ${t("minutesShort")}`}
@@ -60,14 +62,14 @@ export function TaskItem({
           </span>
         </label>
         {!confirming && (
-          <button
-            type="button"
+          <Button
+            variant="quiet"
+            icon={Trash2}
             aria-describedby={titleId}
             onClick={() => setConfirming(true)}
-            className={buttonClass}
           >
             {t("deleteButton")}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -75,31 +77,29 @@ export function TaskItem({
       {children}
 
       {confirming && (
-        <div role="group" aria-label={t("deleteConfirm")} className="mt-3 rounded-xl bg-peach p-3">
+        <div
+          role="group"
+          aria-label={t("deleteConfirm")}
+          className="mt-3 rounded-control bg-danger-soft p-3"
+        >
           <p className="text-sm">{t("deleteConfirm")}</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {/* Focus lands on the safe choice. */}
-            <button
-              type="button"
-              autoFocus
-              onClick={() => setConfirming(false)}
-              className={buttonClass}
-            >
+            <Button autoFocus onClick={() => setConfirming(false)}>
               {t("deleteKeep")}
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="destructive"
               onClick={() => {
                 setConfirming(false);
                 onDelete(task);
               }}
-              className="min-h-11 rounded-full bg-ink px-4 text-sm font-medium text-cream"
             >
               {t("deleteYes")}
-            </button>
+            </Button>
           </div>
         </div>
       )}
-    </li>
+    </Card>
   );
 }

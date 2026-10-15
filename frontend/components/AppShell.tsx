@@ -26,15 +26,15 @@ export function AppShell({ children }: { children: ReactNode }) {
     <>
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-surface focus:px-4 focus:py-2"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-control focus:bg-surface focus:px-4 focus:py-2"
       >
         {t("skipToMain")}
       </a>
-      <header className="border-b border-line bg-surface">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3 px-4 py-4">
           <div className="flex items-baseline gap-3">
             <span className="text-xl font-semibold">{t("appName")}</span>
-            <span className="text-sm text-muted">{t("tagline")}</span>
+            <span className="text-sm text-text-secondary">{t("tagline")}</span>
           </div>
           <div className="flex items-center gap-2">
             <AboutDialog />
@@ -50,8 +50,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <Link
                     href={item.href}
                     aria-current={current ? "page" : undefined}
-                    className={`flex min-h-11 items-center rounded-full px-4 font-medium ${
-                      current ? "bg-ink text-cream" : "hover:bg-cream"
+                    className={`flex min-h-11 items-center rounded-control px-4 font-medium ${
+                      current
+                        ? "bg-primary text-on-primary"
+                        : "text-text hover:bg-surface-muted"
                     }`}
                   >
                     {t(item.label)}

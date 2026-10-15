@@ -2,11 +2,11 @@
 
 import { useCallback, useState } from "react";
 
-import { Illustration } from "@/components/illustrations/Illustration";
 import { LoadError, LoadingSkeleton } from "@/components/LoadStates";
 import { useLocale } from "@/components/LocaleProvider";
 import { TaskItem } from "@/components/tasks/TaskItem";
 import { TaskFeedback, useTaskActions } from "@/components/tasks/useTaskActions";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { useLoad } from "@/components/useLoad";
 import { DayColumn } from "@/components/week/DayColumn";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -27,7 +27,7 @@ export function WeekView() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">{t("weekTitle")}</h1>
+      <h1 className="text-display font-semibold">{t("weekTitle")}</h1>
       <TaskFeedback {...feedback} />
       {state.status === "loading" && <LoadingSkeleton label={t("weekLoading")} />}
       {state.status === "error" && (
@@ -60,12 +60,7 @@ function WeekContent({ week, selected, onSelect, handlers }: ContentProps) {
 
   return (
     <>
-      {isEmpty && (
-        <div className="rounded-card bg-mint p-6 text-center">
-          <Illustration name="week-empty" width={200} className="mb-4" />
-          <p>{t("weekEmpty")}</p>
-        </div>
-      )}
+      {isEmpty && <EmptyState illustration="week-empty" text={t("weekEmpty")} />}
 
       <ul className="grid gap-2 sm:grid-cols-7">
         {week.days.map((item, index) => (
@@ -82,7 +77,7 @@ function WeekContent({ week, selected, onSelect, handlers }: ContentProps) {
       </ul>
 
       <section aria-labelledby="day-tasks" className="space-y-3">
-        <h2 id="day-tasks" className="text-lg font-semibold">
+        <h2 id="day-tasks" className="text-section font-semibold">
           {selected === 0 ? t("todayTitle") : formatDate(day.date!, locale)}
         </h2>
         <TaskList tasks={day.tasks} empty={t("dayEmpty")} handlers={handlers} />
@@ -90,7 +85,7 @@ function WeekContent({ week, selected, onSelect, handlers }: ContentProps) {
 
       {week.unscheduled.task_count > 0 && (
         <section aria-labelledby="unscheduled" className="space-y-3">
-          <h2 id="unscheduled" className="text-lg font-semibold">
+          <h2 id="unscheduled" className="text-section font-semibold">
             {t("unscheduledTitle")} ({week.unscheduled.task_count})
           </h2>
           <TaskList tasks={week.unscheduled.tasks} empty="" handlers={handlers} />
@@ -109,7 +104,7 @@ function TaskList({
   empty: string;
   handlers: Handlers;
 }) {
-  if (tasks.length === 0) return <p className="text-muted">{empty}</p>;
+  if (tasks.length === 0) return <p className="text-text-secondary">{empty}</p>;
   return (
     <ul className="space-y-3">
       {tasks.map((task) => (

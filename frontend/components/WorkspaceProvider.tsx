@@ -3,6 +3,10 @@
 import { type ReactNode, createContext, useCallback, useContext, useEffect, useState } from "react";
 
 import { useT } from "@/components/LocaleProvider";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { Notice } from "@/components/ui/Notice";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { ensureWorkspace } from "@/lib/workspace";
 
 const WorkspaceContext = createContext<string | null>(null);
@@ -41,26 +45,22 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   if (state.status === "error") {
     return (
-      <div role="alert" className="rounded-card bg-peach p-6">
-        <p>{t("workspaceError")}</p>
-        <button
-          type="button"
-          onClick={() => void load()}
-          className="mt-4 min-h-11 rounded-full border border-ink px-4 font-medium hover:bg-surface"
-        >
-          {t("tryAgain")}
-        </button>
-      </div>
+      <Notice
+        tone="error"
+        action={<Button onClick={() => void load()}>{t("tryAgain")}</Button>}
+      >
+        {t("workspaceError")}
+      </Notice>
     );
   }
 
   return (
-    <div role="status" aria-busy="true" className="rounded-card bg-surface p-6 shadow-sm">
+    <Card role="status" aria-busy="true" padding="lg">
       <span className="sr-only">{t("workspaceLoading")}</span>
-      <div aria-hidden="true" className="space-y-3 motion-safe:animate-pulse">
-        <div className="h-6 w-1/3 rounded bg-line" />
-        <div className="h-4 w-2/3 rounded bg-line" />
+      <div className="space-y-3">
+        <Skeleton className="h-6 w-1/3" />
+        <Skeleton className="h-4 w-2/3" />
       </div>
-    </div>
+    </Card>
   );
 }

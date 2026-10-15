@@ -2,6 +2,8 @@
 
 import { Illustration } from "@/components/illustrations/Illustration";
 import { useT } from "@/components/LocaleProvider";
+import { Button } from "@/components/ui/Button";
+import { Notice } from "@/components/ui/Notice";
 import type { HeavyLoad, ScheduledTask } from "@/lib/schedule";
 
 type Props = {
@@ -16,33 +18,28 @@ export function HeavyLoadNotice({ load, suggestion, onMove }: Props) {
   const t = useT();
 
   return (
-    <section
-      aria-labelledby="heavy-load-title"
-      className="flex flex-col gap-4 rounded-card bg-peach p-4 sm:flex-row sm:items-center"
-    >
-      <Illustration name="heavy-load" width={112} className="shrink-0 sm:mx-0" />
-      <div>
-      <h2 id="heavy-load-title" className="font-semibold">
-        {t("heavyLoadTitle")}
-      </h2>
-      <p className="mt-1">
+    <section aria-labelledby="heavy-load-title">
+      <Notice
+        tone="attention"
+        media={<Illustration name="heavy-load" width={112} className="mx-0 shrink-0" />}
+        title={t("heavyLoadTitle")}
+        titleAs="h2"
+        titleId="heavy-load-title"
+        action={
+          suggestion && (
+            <>
+              <p className="text-sm">
+                {t("delaySuggestion")} <strong>{suggestion.title}</strong>
+              </p>
+              <Button variant="primary" onClick={() => onMove(suggestion)}>
+                {t("moveIt")}
+              </Button>
+            </>
+          )
+        }
+      >
         {t(load.reason === "over_capacity" ? "heavyOverCapacity" : "heavyLongTasks")}
-      </p>
-      {suggestion && (
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <p>
-            {t("delaySuggestion")} <strong>{suggestion.title}</strong>
-          </p>
-          <button
-            type="button"
-            onClick={() => onMove(suggestion)}
-            className="min-h-11 rounded-full bg-ink px-4 text-sm font-medium text-cream"
-          >
-            {t("moveIt")}
-          </button>
-        </div>
-      )}
-      </div>
+      </Notice>
     </section>
   );
 }

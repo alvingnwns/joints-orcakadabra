@@ -1,6 +1,7 @@
 "use client";
 
 import { useT } from "@/components/LocaleProvider";
+import { Button } from "@/components/ui/Button";
 import type { TranslationKey } from "@/lib/i18n/en";
 
 // The example questions from the design.
@@ -14,14 +15,9 @@ export function SuggestedQuestions({ onAsk, disabled }: { onAsk: (q: string) => 
     <ul className="flex flex-wrap gap-2">
       {SUGGESTIONS.map((key) => (
         <li key={key}>
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={() => onAsk(t(key))}
-            className="min-h-11 rounded-full border border-ink px-4 text-sm font-medium hover:bg-cream disabled:opacity-50"
-          >
+          <Button disabled={disabled} onClick={() => onAsk(t(key))}>
             {t(key)}
-          </button>
+          </Button>
         </li>
       ))}
     </ul>

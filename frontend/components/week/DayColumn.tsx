@@ -17,14 +17,19 @@ type Props = {
 export function DayColumn({ day, isToday, capacity, selected, onSelect }: Props) {
   const { t, locale } = useLocale();
 
+  // One border colour at a time: the selected day, else a soft amber edge on a full day.
+  const edge = selected
+    ? "border-primary ring-1 ring-primary"
+    : day.is_heavy
+      ? "border-attention-text/50"
+      : "border-border";
+
   return (
     <button
       type="button"
       aria-pressed={selected}
       onClick={onSelect}
-      className={`w-full rounded-card p-3 text-left ${
-        selected ? "bg-surface shadow-md ring-2 ring-ink" : "bg-surface/70 shadow-sm"
-      } ${day.is_heavy ? "border-2 border-peach" : ""}`}
+      className={`w-full rounded-card border bg-surface p-3 text-left ${edge}`}
     >
       <span className="block font-medium">
         {isToday ? t("todayTitle") : formatDate(day.date, locale)}

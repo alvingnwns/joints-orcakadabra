@@ -1,16 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-labelledby="title">
   <title id="title">A ball of yarn unwinding into a straight line</title>
   <!-- Placeholder illustration (loading state). Animate the thread with CSS in the component; keep viewBox 240x180 -->
-  <ellipse cx="120" cy="100" rx="105" ry="70" fill="#FFF4E6"/>
-  <circle cx="78" cy="96" r="34" fill="#C9B8E8"/>
+  <ellipse cx="120" cy="100" rx="105" ry="70" fill="#dce8d8"/>
+  <circle cx="78" cy="96" r="34" fill="#b3cdbe"/>
   <g fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity="0.8">
     <path d="M52 80 C70 70 96 74 106 90"/>
     <path d="M48 98 C66 86 98 92 110 106"/>
     <path d="M56 116 C72 104 96 108 104 122"/>
     <path d="M66 64 C60 84 62 110 76 128"/>
   </g>
-  <path class="thread" d="M108 110 C126 124 140 96 156 110 S 188 120 210 112" fill="none" stroke="#2B3A55" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="1 0"/>
-  <g fill="#FFE08A">
+  <path class="thread" d="M108 110 C126 124 140 96 156 110 S 188 120 210 112" fill="none" stroke="#26332d" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="1 0"/>
+  <g fill="#f2dc9b">
     <circle cx="170" cy="76" r="3"/>
     <circle cx="190" cy="88" r="2.5"/>
     <circle cx="150" cy="64" r="2"/>

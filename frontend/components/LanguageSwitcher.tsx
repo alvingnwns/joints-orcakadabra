@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocale } from "@/components/LocaleProvider";
+import { Select } from "@/components/ui/Field";
 import { LOCALE_NAMES, type Locale, dictionaries, isLocale } from "@/lib/i18n";
 
 export function LanguageSwitcher() {
@@ -8,23 +9,23 @@ export function LanguageSwitcher() {
 
   return (
     <div className="flex items-center gap-2 text-sm">
-      <label htmlFor="language" className="text-muted">
+      <label htmlFor="language" className="text-text-secondary">
         {t("languageLabel")}
       </label>
-      <select
+      <Select
         id="language"
+        inline
         value={locale}
         onChange={(event) => {
           if (isLocale(event.target.value)) setLocale(event.target.value);
         }}
-        className="min-h-11 rounded-full border border-muted bg-surface px-3"
       >
         {(Object.keys(dictionaries) as Locale[]).map((code) => (
           <option key={code} value={code}>
             {LOCALE_NAMES[code]}
           </option>
         ))}
-      </select>
+      </Select>
     </div>
   );
 }

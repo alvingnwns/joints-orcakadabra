@@ -1,8 +1,11 @@
 "use client";
 
+import { CalendarClock } from "lucide-react";
 import { type FormEvent, useId, useRef, useState } from "react";
 
 import { useT } from "@/components/LocaleProvider";
+import { Button } from "@/components/ui/Button";
+import { Field, Input } from "@/components/ui/Field";
 import type { TranslationKey } from "@/lib/i18n/en";
 import { type Task, type TaskChanges, localDate } from "@/lib/tasks";
 
@@ -10,10 +13,6 @@ export type UpdateTask = (task: Task, changes: TaskChanges, message: Translation
 
 type Props = { task: Task; onUpdate: UpdateTask };
 type Mode = "closed" | "menu" | "pickDay" | "smaller";
-
-const buttonClass =
-  "min-h-11 rounded-full border border-ink px-4 text-sm font-medium hover:bg-cream disabled:opacity-50";
-const inputClass = "mt-1 min-h-11 w-full rounded-xl border border-muted bg-surface px-3";
 
 /** Ways to change plans without guilt: move, save for later, or make a task smaller (CP8). */
 export function TaskActions({ task, onUpdate }: Props) {
@@ -29,13 +28,9 @@ export function TaskActions({ task, onUpdate }: Props) {
 
   if (task.status === "deferred") {
     return (
-      <button
-        type="button"
-        onClick={() => onUpdate(task, { status: "todo" }, "broughtBack")}
-        className={buttonClass}
-      >
+      <Button onClick={() => onUpdate(task, { status: "todo" }, "broughtBack")}>
         {t("actionBringBack")}
-      </button>
+      </Button>
     );
   }
 
@@ -68,73 +63,54 @@ export function TaskActions({ task, onUpdate }: Props) {
     apply({ title: trimmed, estimated_minutes: minutes ? Number(minutes) : null }, "madeSmaller");
   }
 
-  const cancelButton = (
-    <button type="button" onClick={() => setMode("menu")} className={buttonClass}>
-      {t("cancel")}
-    </button>
-  );
+  const cancelButton = <Button onClick={() => setMode("menu")}>{t("cancel")}</Button>;
 
   return (
     <div className="mt-3">
-      <button
+      <Button
         ref={triggerRef}
-        type="button"
+        icon={CalendarClock}
         aria-expanded={mode !== "closed"}
         aria-controls={`${formId}-panel`}
         onClick={() => setMode(mode === "closed" ? "menu" : "closed")}
-        className={buttonClass}
       >
         {t("changePlans")}
-      </button>
+      </Button>
 
       {mode !== "closed" && (
-        <div id={`${formId}-panel`} className="mt-3 rounded-xl bg-cream p-3">
+        <div id={`${formId}-panel`} className="mt-3 rounded-control bg-surface-muted p-3">
           {mode === "menu" && (
             <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => apply({ due_date: localDate(1) }, "movedTomorrow")}
-                className={buttonClass}
-              >
+              <Button onClick={() => apply({ due_date: localDate(1) }, "movedTomorrow")}>
                 {t("actionTomorrow")}
-              </button>
-              <button type="button" onClick={openPickDay} className={buttonClass}>
-                {t("actionPickDay")}
-              </button>
-              <button
-                type="button"
-                onClick={() => apply({ status: "deferred" }, "movedLater")}
-                className={buttonClass}
-              >
+              </Button>
+              <Button onClick={openPickDay}>{t("actionPickDay")}</Button>
+              <Button onClick={() => apply({ status: "deferred" }, "movedLater")}>
                 {t("actionLater")}
-              </button>
-              <button type="button" onClick={openSmaller} className={buttonClass}>
-                {t("actionSmaller")}
-              </button>
+              </Button>
+              <Button onClick={openSmaller}>{t("actionSmaller")}</Button>
             </div>
           )}
 
           {mode === "pickDay" && (
             <form onSubmit={submitDay} className="space-y-3">
-              <div>
-                <label htmlFor={`${formId}-day`} className="block text-sm">
-                  {t("newDayLabel")}
-                </label>
-                <input
-                  id={`${formId}-day`}
-                  type="date"
-                  autoFocus
-                  required
-                  min={localDate(0)}
-                  value={day}
-                  onChange={(event) => setDay(event.target.value)}
-                  className={inputClass}
-                />
-              </div>
+              <Field label={t("newDayLabel")}>
+                {(control) => (
+                  <Input
+                    {...control}
+                    type="date"
+                    autoFocus
+                    required
+                    min={localDate(0)}
+                    value={day}
+                    onChange={(event) => setDay(event.target.value)}
+                  />
+                )}
+              </Field>
               <div className="flex flex-wrap gap-2">
-                <button type="submit" disabled={!day} className={buttonClass}>
+                <Button type="submit" variant="primary" disabled={!day}>
                   {t("save")}
-                </button>
+                </Button>
                 {cancelButton}
               </div>
             </form>
@@ -142,39 +118,35 @@ export function TaskActions({ task, onUpdate }: Props) {
 
           {mode === "smaller" && (
             <form onSubmit={submitSmaller} className="space-y-3">
-              <div>
-                <label htmlFor={`${formId}-title`} className="block text-sm">
-                  {t("smallerTitleLabel")}
-                </label>
-                <input
-                  id={`${formId}-title`}
-                  autoFocus
-                  maxLength={200}
-                  value={title}
-                  onChange={(event) => setTitle(event.target.value)}
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label htmlFor={`${formId}-minutes`} className="block text-sm">
-                  {t("estimateLabel")}
-                </label>
-                <input
-                  id={`${formId}-minutes`}
-                  type="number"
-                  inputMode="numeric"
-                  min={5}
-                  max={720}
-                  step={5}
-                  value={minutes}
-                  onChange={(event) => setMinutes(event.target.value)}
-                  className={inputClass}
-                />
-              </div>
+              <Field label={t("smallerTitleLabel")}>
+                {(control) => (
+                  <Input
+                    {...control}
+                    autoFocus
+                    maxLength={200}
+                    value={title}
+                    onChange={(event) => setTitle(event.target.value)}
+                  />
+                )}
+              </Field>
+              <Field label={t("estimateLabel")}>
+                {(control) => (
+                  <Input
+                    {...control}
+                    type="number"
+                    inputMode="numeric"
+                    min={5}
+                    max={720}
+                    step={5}
+                    value={minutes}
+                    onChange={(event) => setMinutes(event.target.value)}
+                  />
+                )}
+              </Field>
               <div className="flex flex-wrap gap-2">
-                <button type="submit" disabled={!title.trim()} className={buttonClass}>
+                <Button type="submit" variant="primary" disabled={!title.trim()}>
                   {t("save")}
-                </button>
+                </Button>
                 {cancelButton}
               </div>
             </form>

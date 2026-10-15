@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { Illustration } from "@/components/illustrations/Illustration";
 import { useT } from "@/components/LocaleProvider";
+import { Button } from "@/components/ui/Button";
 import { apiFetch } from "@/lib/api";
 
 type Status = "checking" | "ok" | "error";
@@ -32,19 +33,13 @@ export function ConnectionBanner() {
   return (
     <div role="status" aria-live="polite">
       {status === "checking" && (
-        <p className="px-4 py-2 text-center text-sm text-muted">{t("connecting")}</p>
+        <p className="px-4 py-2 text-center text-sm text-text-secondary">{t("connecting")}</p>
       )}
       {status === "error" && (
-        <div className="flex flex-wrap items-center justify-center gap-3 bg-peach px-4 py-3 text-sm">
+        <div className="flex flex-wrap items-center justify-center gap-3 bg-attention px-4 py-3 text-sm text-attention-text">
           <Illustration name="connection-error" width={72} className="mx-0" />
           <p>{t("serverUnreachable")}</p>
-          <button
-            type="button"
-            onClick={() => void check()}
-            className="min-h-11 rounded-full border border-ink px-4 font-medium hover:bg-surface"
-          >
-            {t("tryAgain")}
-          </button>
+          <Button onClick={() => void check()}>{t("tryAgain")}</Button>
         </div>
       )}
     </div>

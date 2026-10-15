@@ -21,14 +21,14 @@ export function LoadBar({ totalMinutes, capacity, isHeavy }: Props) {
   // Spans only: this sits inside the day button, which allows phrasing content only.
   return (
     <span className="block">
-      <span aria-hidden="true" className="block h-2 overflow-hidden rounded-full bg-line">
+      <span aria-hidden="true" className="block h-2 overflow-hidden rounded-full bg-border">
         <span
-          className={`block h-full rounded-full ${isHeavy ? "bg-ink/70" : "bg-ink/30"}`}
+          className={`block h-full rounded-full ${isHeavy ? "bg-attention-text" : "bg-primary/50"}`}
           style={{ width: `${percent}%` }}
         />
       </span>
       <span className="mt-1 block text-sm">{t(loadLabel(totalMinutes, capacity, isHeavy))}</span>
-      <span className="block text-xs text-muted">
+      <span className="block text-meta text-text-secondary">
         {totalMinutes} / {capacity} {t("minutesShort")}
       </span>
     </span>

@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 
-import { Illustration, type IllustrationName } from "@/components/illustrations/Illustration";
+import type { IllustrationName } from "@/components/illustrations/Illustration";
 import { LoadError, LoadingSkeleton } from "@/components/LoadStates";
 import { useT } from "@/components/LocaleProvider";
 import { LaterList } from "@/components/tasks/LaterList";
@@ -11,6 +11,7 @@ import { TaskItem } from "@/components/tasks/TaskItem";
 import { TaskFeedback, useTaskActions } from "@/components/tasks/useTaskActions";
 import { FocusCard } from "@/components/today/FocusCard";
 import { HeavyLoadNotice } from "@/components/today/HeavyLoadNotice";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { useLoad } from "@/components/useLoad";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { type TodaySchedule, getToday } from "@/lib/schedule";
@@ -53,7 +54,7 @@ export function TodayView() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">{t("todayTitle")}</h1>
+      <h1 className="text-display font-semibold">{t("todayTitle")}</h1>
       <QuickAddForm onAdd={handleAdd} />
       <TaskFeedback {...feedback} />
 
@@ -87,10 +88,13 @@ function TodayContent({ data, handlers }: { data: TodayData; handlers: Handlers 
       )}
 
       {top.length === 0 ? (
-        <EmptyDay name={emptyIllustration} text={t(doneToday.length > 0 ? "allDone" : "dayClear")} />
+        <EmptyState
+          illustration={emptyIllustration}
+          text={t(doneToday.length > 0 ? "allDone" : "dayClear")}
+        />
       ) : (
         <section aria-labelledby="start-here" className="space-y-3">
-          <h2 id="start-here" className="text-lg font-semibold">
+          <h2 id="start-here" className="text-section font-semibold">
             {t("startHere")}
           </h2>
           <ol className="space-y-3">
@@ -103,7 +107,7 @@ function TodayContent({ data, handlers }: { data: TodayData; handlers: Handlers 
 
       {rest.length > 0 && (
         <section aria-labelledby="also-today" className="space-y-3">
-          <h2 id="also-today" className="text-lg font-semibold">
+          <h2 id="also-today" className="text-section font-semibold">
             {t("alsoToday")}
           </h2>
           <ul className="space-y-3">
@@ -120,11 +124,3 @@ function TodayContent({ data, handlers }: { data: TodayData; handlers: Handlers 
   );
 }
 
-function EmptyDay({ name, text }: { name: IllustrationName; text: string }) {
-  return (
-    <div className="rounded-card bg-mint p-6 text-center">
-      <Illustration name={name} width={200} className="mb-4" />
-      <p>{text}</p>
-    </div>
-  );
-}

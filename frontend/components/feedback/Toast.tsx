@@ -1,7 +1,10 @@
 "use client";
 
+import { X } from "lucide-react";
+
 import { Illustration } from "@/components/illustrations/Illustration";
 import { useT } from "@/components/LocaleProvider";
+import { Icon } from "@/components/ui/Icon";
 import type { TranslationKey } from "@/lib/i18n/en";
 
 export type ToastMessage = {
@@ -13,6 +16,10 @@ export type ToastMessage = {
 };
 
 type Props = { toast: ToastMessage | null; onUndo: () => void; onDismiss: () => void };
+
+// The toast is a dark surface, so its controls use light outlines and a light focus ring.
+const toastButton =
+  "min-h-11 rounded-control text-sm font-medium hover:bg-on-primary hover:text-text focus-visible:outline-on-primary";
 
 /**
  * A small toast at the bottom of the screen. It stays until the next action or until it is
@@ -29,7 +36,7 @@ export function Toast({ toast, onUndo, onDismiss }: Props) {
       className="fixed inset-x-4 bottom-20 z-40 sm:bottom-4 sm:left-4 sm:right-auto sm:max-w-sm"
     >
       {toast && (
-        <div className="flex items-center gap-3 rounded-card bg-ink p-3 text-cream shadow-lg motion-safe:animate-pop">
+        <div className="flex items-center gap-3 rounded-card bg-text p-3 text-on-primary shadow-lg motion-safe:animate-pop">
           {toast.celebrate && (
             <Illustration name="celebrate" width={40} className="mx-0 shrink-0 motion-safe:animate-pop" />
           )}
@@ -39,7 +46,7 @@ export function Toast({ toast, onUndo, onDismiss }: Props) {
               type="button"
               data-toast-focus
               onClick={onUndo}
-              className="min-h-11 rounded-full border border-cream px-4 text-sm font-medium hover:bg-cream hover:text-ink"
+              className={`${toastButton} border border-on-primary px-4`}
             >
               {t("undo")}
             </button>
@@ -48,9 +55,9 @@ export function Toast({ toast, onUndo, onDismiss }: Props) {
             type="button"
             {...(!toast.undo && { "data-toast-focus": true })}
             onClick={onDismiss}
-            className="min-h-11 min-w-11 rounded-full text-lg leading-none hover:bg-cream hover:text-ink"
+            className={`${toastButton} inline-flex min-w-11 items-center justify-center`}
           >
-            <span aria-hidden="true">×</span>
+            <Icon icon={X} />
             <span className="sr-only">{t("close")}</span>
           </button>
         </div>

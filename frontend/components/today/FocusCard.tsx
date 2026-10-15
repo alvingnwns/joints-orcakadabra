@@ -1,9 +1,12 @@
 "use client";
 
+import { CircleQuestionMark } from "lucide-react";
+
 import { useAskChat } from "@/components/chat/ChatPanel";
 import { useT } from "@/components/LocaleProvider";
 import { type UpdateTask } from "@/components/tasks/TaskActions";
 import { TaskItem } from "@/components/tasks/TaskItem";
+import { Button } from "@/components/ui/Button";
 import type { ScheduledTask } from "@/lib/schedule";
 import type { Task } from "@/lib/tasks";
 
@@ -22,15 +25,16 @@ export function FocusCard({ first, ...props }: Props) {
 
   return (
     <TaskItem {...props} emphasis={first}>
-      <button
-        type="button"
+      <Button
+        variant="quiet"
+        icon={CircleQuestionMark}
         aria-haspopup="dialog"
         onClick={() => askChat(`${t("chatWhy")} (${props.task.title})`, props.task.id)}
-        className="mt-3 min-h-11 text-sm font-medium underline underline-offset-4"
+        className="mt-3"
       >
         {t("chatWhy")}
         <span className="sr-only"> ({props.task.title})</span>
-      </button>
+      </Button>
     </TaskItem>
   );
 }

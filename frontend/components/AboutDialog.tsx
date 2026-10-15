@@ -1,50 +1,39 @@
 "use client";
 
-import { useRef } from "react";
+import { Info } from "lucide-react";
+import { useState } from "react";
 
 import { Illustration } from "@/components/illustrations/Illustration";
 import { useT } from "@/components/LocaleProvider";
+import { Button } from "@/components/ui/Button";
+import { Dialog } from "@/components/ui/Dialog";
 
 /**
- * "About this app", opened from the header on every page. The native <dialog> gives a focus
- * trap, Esc to close, and focus return for free. One factual privacy point only (C2).
+ * "About this app", opened from the header on every page. The native <dialog> behind Dialog
+ * gives a focus trap, Esc to close, and focus return. One factual privacy point only (C2).
  */
 export function AboutDialog() {
   const t = useT();
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [open, setOpen] = useState(false);
 
   return (
     <>
-      <button
-        type="button"
-        aria-haspopup="dialog"
-        onClick={() => dialogRef.current?.showModal()}
-        className="min-h-11 rounded-full border border-muted px-4 text-sm font-medium hover:bg-cream"
-      >
+      <Button icon={Info} aria-haspopup="dialog" onClick={() => setOpen(true)}>
         {t("aboutButton")}
-      </button>
-      <dialog
-        ref={dialogRef}
-        aria-labelledby="about-title"
-        className="m-auto max-w-md rounded-card bg-surface p-6 text-ink shadow-lg backdrop:bg-ink/40"
-      >
+      </Button>
+      <Dialog open={open} onClose={() => setOpen(false)} labelledBy="about-title">
         <Illustration name="welcome" width={180} className="mb-4" />
-        <h2 id="about-title" className="text-lg font-semibold">
+        <h2 id="about-title" className="text-section font-semibold">
           {t("aboutTitle")}
         </h2>
         <p className="mt-3">{t("aboutBody")}</p>
-        <p className="mt-3 text-sm text-muted">{t("aboutPrivacy")}</p>
+        <p className="mt-3 text-sm text-text-secondary">{t("aboutPrivacy")}</p>
         <div className="mt-5 text-right">
-          <button
-            type="button"
-            autoFocus
-            onClick={() => dialogRef.current?.close()}
-            className="min-h-11 rounded-full bg-ink px-5 font-medium text-cream"
-          >
+          <Button variant="primary" autoFocus onClick={() => setOpen(false)}>
             {t("close")}
-          </button>
+          </Button>
         </div>
-      </dialog>
+      </Dialog>
     </>
   );
 }

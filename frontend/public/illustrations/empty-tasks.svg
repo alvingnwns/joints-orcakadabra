@@ -1,19 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-labelledby="title">
   <title id="title">An empty clipboard next to a small sprout</title>
   <!-- Placeholder illustration: replace with final artwork, keep viewBox 240x180 -->
-  <ellipse cx="120" cy="100" rx="105" ry="70" fill="#FFF4E6"/>
-  <rect x="78" y="34" width="76" height="104" rx="10" fill="#FFFFFF" stroke="#2B3A55" stroke-width="3"/>
-  <rect x="100" y="26" width="32" height="16" rx="5" fill="#FDBA8C" stroke="#2B3A55" stroke-width="3"/>
-  <g stroke="#E4D8C8" stroke-width="5" stroke-linecap="round">
+  <ellipse cx="120" cy="100" rx="105" ry="70" fill="#dce8d8"/>
+  <rect x="78" y="34" width="76" height="104" rx="10" fill="#FFFFFF" stroke="#26332d" stroke-width="3"/>
+  <rect x="100" y="26" width="32" height="16" rx="5" fill="#e8c9a0" stroke="#26332d" stroke-width="3"/>
+  <g stroke="#d5dbcf" stroke-width="5" stroke-linecap="round">
     <line x1="94" y1="64" x2="138" y2="64"/>
     <line x1="94" y1="82" x2="130" y2="82"/>
     <line x1="94" y1="100" x2="122" y2="100"/>
   </g>
-  <rect x="164" y="118" width="30" height="24" rx="4" fill="#F28C7A"/>
+  <rect x="164" y="118" width="30" height="24" rx="4" fill="#d98e73"/>
   <path d="M179 118 C179 104 179 98 179 92" stroke="#6E9F75" stroke-width="3" fill="none" stroke-linecap="round"/>
   <path d="M179 104 C170 102 165 95 166 88 C174 89 179 95 179 104 Z" fill="#9CC5A1"/>
   <path d="M179 98 C188 96 193 89 192 82 C184 83 179 89 179 98 Z" fill="#9CC5A1"/>
-  <g fill="#FFE08A">
+  <g fill="#f2dc9b">
     <path d="M56 58 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 Z"/>
     <path d="M186 50 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2 Z"/>
   </g>
