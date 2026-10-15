@@ -2,7 +2,7 @@
 
 import { useLocale } from "@/components/LocaleProvider";
 import { LoadBar } from "@/components/week/LoadBar";
-import { formatDate } from "@/lib/i18n";
+import { fill, formatDate } from "@/lib/i18n";
 import type { DayLoad } from "@/lib/schedule";
 
 type Props = {
@@ -33,6 +33,9 @@ export function DayColumn({ day, isToday, capacity, selected, onSelect }: Props)
     >
       <span className="block font-medium">
         {isToday ? t("todayTitle") : formatDate(day.date, locale)}
+      </span>
+      <span className="block text-sm text-text-secondary">
+        {fill(t(day.task_count === 1 ? "taskCountOne" : "taskCountMany"), { n: day.task_count })}
       </span>
       <span className="mt-2 block">
         <LoadBar totalMinutes={day.total_minutes} capacity={capacity} isHeavy={day.is_heavy} />

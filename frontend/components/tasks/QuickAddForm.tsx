@@ -3,25 +3,28 @@
 import { Plus } from "lucide-react";
 import { type FormEvent, useRef, useState } from "react";
 
-import { useT } from "@/components/LocaleProvider";
+import { useLocale } from "@/components/LocaleProvider";
 import { ImpactPicker } from "@/components/tasks/ImpactPicker";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Field, Input, Textarea } from "@/components/ui/Field";
 import { Notice } from "@/components/ui/Notice";
+import { fill, formatDate } from "@/lib/i18n";
 import type { NewTask } from "@/lib/tasks";
 
 type Props = {
   /** Should reject if the task could not be saved, so the form can keep what was typed. */
   onAdd: (task: NewTask) => Promise<void>;
+  /** A date ("YYYY-MM-DD") new tasks start with, e.g. the day selected in the week view. */
+  defaultDueDate?: string;
 };
 
-export function QuickAddForm({ onAdd }: Props) {
-  const t = useT();
+export function QuickAddForm({ onAdd, defaultDueDate }: Props) {
+  const { t, locale } = useLocale();
   const titleRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [dueDate, setDueDate] = useState(defaultDueDate ?? "");
   const [minutes, setMinutes] = useState("");
   const [impact, setImpact] = useState(3);
   const [saving, setSaving] = useState(false);
@@ -44,7 +47,7 @@ export function QuickAddForm({ onAdd }: Props) {
       });
       setTitle("");
       setDescription("");
-      setDueDate("");
+      setDueDate(defaultDueDate ?? "");
       setMinutes("");
       setImpact(3);
       titleRef.current?.focus();
@@ -61,18 +64,30 @@ export function QuickAddForm({ onAdd }: Props) {
         <label htmlFor="new-task-title" className="block font-medium">
           {t("addTaskLabel")}
         </label>
-        <div className="mt-2 flex gap-2">
+        <div className="mt-2 flex flex-wrap gap-2">
           <Input
             ref={titleRef}
             id="new-task-title"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             maxLength={200}
+            className="min-w-[min(12rem,100%)] flex-1"
           />
-          <Button type="submit" variant="primary" icon={Plus} disabled={saving || !title.trim()}>
+          <Button
+            type="submit"
+            variant="primary"
+            icon={Plus}
+            disabled={saving || !title.trim()}
+            className="whitespace-nowrap"
+          >
             {t("addTaskButton")}
           </Button>
         </div>
+        {defaultDueDate && dueDate === defaultDueDate && (
+          <p className="mt-2 text-sm text-text-secondary">
+            {fill(t("addingTo"), { date: formatDate(defaultDueDate, locale) })}
+          </p>
+        )}
 
         <details className="mt-3">
           <summary className="flex min-h-11 cursor-pointer items-center text-sm text-text-secondary">

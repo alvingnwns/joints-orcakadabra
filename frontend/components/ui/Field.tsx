@@ -3,7 +3,7 @@ import { type ComponentProps, type ReactNode, useId } from "react";
 import { cn } from "@/lib/cn";
 
 const CONTROL =
-  "rounded-control border border-border-strong bg-surface text-text disabled:opacity-50 aria-[invalid=true]:border-danger";
+  "min-w-0 max-w-full rounded-control border border-border-strong bg-surface text-text disabled:opacity-50 aria-[invalid=true]:border-danger";
 
 export function Input({ className, ...rest }: ComponentProps<"input">) {
   return <input className={cn(CONTROL, "min-h-11 w-full px-3", className)} {...rest} />;
@@ -21,7 +21,7 @@ export function Select({
 }: ComponentProps<"select"> & { inline?: boolean }) {
   return (
     <select
-      className={cn(CONTROL, "min-h-11 px-3", inline ? "w-auto" : "w-full", className)}
+      className={cn(CONTROL, "min-h-11 px-3", inline ? "w-auto max-w-full" : "w-full", className)}
       {...rest}
     />
   );
@@ -56,7 +56,7 @@ export function Field({ label, hint, error, className, children }: FieldProps) {
   const describedBy = [hint && hintId, error && errorId].filter(Boolean).join(" ");
 
   return (
-    <div className={className}>
+    <div className={cn("min-w-0", className)}>
       <label htmlFor={id} className="block text-sm font-medium">
         {label}
       </label>

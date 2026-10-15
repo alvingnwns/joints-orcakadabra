@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 
 import { LoadError, LoadingSkeleton } from "@/components/LoadStates";
 import { useLocale } from "@/components/LocaleProvider";
+import { QuickAddForm } from "@/components/tasks/QuickAddForm";
 import { TaskItem } from "@/components/tasks/TaskItem";
 import { TaskFeedback, useTaskActions } from "@/components/tasks/useTaskActions";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -12,7 +13,7 @@ import { DayColumn } from "@/components/week/DayColumn";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { formatDate } from "@/lib/i18n";
 import { type ScheduledTask, type WeekSchedule, getWeek } from "@/lib/schedule";
-import { localDate } from "@/lib/tasks";
+import { type NewTask, createTask, localDate } from "@/lib/tasks";
 
 type Handlers = ReturnType<typeof useTaskActions>["handlers"];
 
@@ -24,6 +25,11 @@ export function WeekView() {
   const { state, reload, refresh } = useLoad(fetcher);
   const { handlers, feedback } = useTaskActions(refresh);
   const [selected, setSelected] = useState(0); // index into days; 0 is today
+
+  async function handleAdd(newTask: NewTask) {
+    await createTask(workspaceId, newTask); // the form handles a failure
+    await refresh();
+  }
 
   return (
     <div className="space-y-6">
@@ -38,6 +44,7 @@ export function WeekView() {
           week={state.data}
           selected={selected}
           onSelect={setSelected}
+          onAdd={handleAdd}
           handlers={handlers}
         />
       )}
@@ -49,10 +56,11 @@ type ContentProps = {
   week: WeekSchedule;
   selected: number;
   onSelect: (index: number) => void;
+  onAdd: (task: NewTask) => Promise<void>;
   handlers: Handlers;
 };
 
-function WeekContent({ week, selected, onSelect, handlers }: ContentProps) {
+function WeekContent({ week, selected, onSelect, onAdd, handlers }: ContentProps) {
   const { t, locale } = useLocale();
   const isEmpty =
     week.unscheduled.task_count === 0 && week.days.every((day) => day.task_count === 0);
@@ -62,7 +70,7 @@ function WeekContent({ week, selected, onSelect, handlers }: ContentProps) {
     <>
       {isEmpty && <EmptyState illustration="week-empty" text={t("weekEmpty")} />}
 
-      <ul className="grid gap-2 sm:grid-cols-7">
+      <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-7">
         {week.days.map((item, index) => (
           <li key={item.date}>
             <DayColumn
@@ -76,15 +84,17 @@ function WeekContent({ week, selected, onSelect, handlers }: ContentProps) {
         ))}
       </ul>
 
-      <section aria-labelledby="day-tasks" className="space-y-3">
+      <section aria-labelledby="day-tasks" className="mx-auto max-w-3xl space-y-3">
         <h2 id="day-tasks" className="text-section font-semibold">
           {selected === 0 ? t("todayTitle") : formatDate(day.date!, locale)}
         </h2>
+        {/* Keyed by day, so the form starts fresh (and pre-filled) when another day is picked. */}
+        <QuickAddForm key={day.date} onAdd={onAdd} defaultDueDate={day.date!} />
         <TaskList tasks={day.tasks} empty={t("dayEmpty")} handlers={handlers} />
       </section>
 
       {week.unscheduled.task_count > 0 && (
-        <section aria-labelledby="unscheduled" className="space-y-3">
+        <section aria-labelledby="unscheduled" className="mx-auto max-w-3xl space-y-3">
           <h2 id="unscheduled" className="text-section font-semibold">
             {t("unscheduledTitle")} ({week.unscheduled.task_count})
           </h2>

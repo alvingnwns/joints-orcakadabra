@@ -1,26 +1,34 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 
 import { useT } from "@/components/LocaleProvider";
+import { ImpactPicker } from "@/components/tasks/ImpactPicker";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Field, Input } from "@/components/ui/Field";
 import { Notice } from "@/components/ui/Notice";
-import type { Draft } from "@/lib/dump";
+import type { DraftFields } from "@/lib/dump";
 
 type Props = {
-  draft: Draft;
-  onChange: (draft: Draft) => void;
+  draft: DraftFields;
+  onChange: (draft: DraftFields) => void;
   onRemove: () => void;
 };
 
-/** One editable draft. Guessed or unclear details are highlighted with the AI's note. */
+/**
+ * One editable draft: the same fields as manual entry. It is labelled "Not saved yet" so it is
+ * never mistaken for a task. Guessed or unclear details are highlighted with the AI's note.
+ */
 export function DraftCard({ draft, onChange, onRemove }: Props) {
   const t = useT();
 
   return (
     <Card as="li" tone={draft.needs_confirmation ? "attention" : "surface"}>
+      <Badge icon={Pencil} className="mb-3">
+        {t("draftNotSaved")}
+      </Badge>
       {draft.needs_confirmation && (
         <Notice tone="attention" className="mb-3">
           <p>
@@ -69,6 +77,12 @@ export function DraftCard({ draft, onChange, onRemove }: Props) {
             />
           )}
         </Field>
+        <div className="sm:col-span-2">
+          <ImpactPicker
+            value={draft.impact_score}
+            onChange={(impact_score) => onChange({ ...draft, impact_score })}
+          />
+        </div>
       </div>
       <Button variant="quiet" icon={Trash2} onClick={onRemove} className="mt-3">
         {t("draftRemove")}

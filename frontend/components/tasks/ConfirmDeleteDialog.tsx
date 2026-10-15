@@ -25,7 +25,7 @@ export function ConfirmDeleteDialog({ task, onConfirm, onClose }: Props) {
         {fill(t("deleteBody"), { title: task.title })}
       </p>
       <div className="mt-5 flex flex-wrap justify-end gap-2">
-        <Button autoFocus onClick={onClose}>
+        <Button onClick={onClose}>
           {t("deleteKeep")}
         </Button>
         <Button variant="destructive" onClick={onConfirm}>

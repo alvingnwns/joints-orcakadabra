@@ -8,8 +8,8 @@ export function LanguageSwitcher() {
   const { locale, setLocale, t } = useLocale();
 
   return (
-    <div className="flex items-center gap-2 text-sm">
-      <label htmlFor="language" className="text-text-secondary">
+    <div className="flex min-w-0 max-w-full items-center gap-2 text-sm">
+      <label htmlFor="language" className="sr-only text-text-secondary sm:not-sr-only">
         {t("languageLabel")}
       </label>
       <Select

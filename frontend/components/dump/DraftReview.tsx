@@ -4,9 +4,9 @@ import { useT } from "@/components/LocaleProvider";
 import { DraftCard } from "@/components/dump/DraftCard";
 import { Button } from "@/components/ui/Button";
 import { Notice } from "@/components/ui/Notice";
-import type { Draft } from "@/lib/dump";
+import type { DraftFields } from "@/lib/dump";
 
-export type EditableDraft = Draft & { key: number }; // stable React key while editing
+export type EditableDraft = DraftFields & { key: number }; // stable React key while editing
 
 type Props = {
   drafts: EditableDraft[];

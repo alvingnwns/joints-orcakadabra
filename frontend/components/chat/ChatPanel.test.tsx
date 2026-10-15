@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -141,6 +141,38 @@ describe("ChatPanel", () => {
     expect(await screen.findByText("The report first.")).toBeInTheDocument();
     expect(screen.getAllByText(/What should I do first\?/)).toHaveLength(1);
     expect(chatBodies(fetchMock)).toHaveLength(2);
+  });
+
+  it("says so when the server can't be reached, and still offers 'Try again'", async () => {
+    fakeBackend(["network"]);
+    renderPanel();
+    await openPanel();
+
+    await userEvent.click(screen.getByRole("button", { name: "What should I do first?" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("can't reach the server");
+    expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
+  });
+
+  it("says a task is gone, without offering a retry that would fail the same way", async () => {
+    fakeBackend([404]);
+    renderPanel();
+
+    await userEvent.click(await screen.findByRole("button", { name: "Why" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("isn't on your list anymore");
+    expect(screen.queryByRole("button", { name: "Try again" })).not.toBeInTheDocument();
+  });
+
+  it("offers four starting questions and says answers are only suggestions", async () => {
+    fakeBackend(["ok"]);
+    renderPanel();
+
+    const dialog = await openPanel();
+
+    expect(dialog).toHaveTextContent("nothing changes unless you change it");
+    expect(screen.getByRole("button", { name: "What can I move to another day?" })).toBeInTheDocument();
+    expect(within(dialog).getAllByRole("listitem")).toHaveLength(4);
   });
 
   it("'Why is this here?' opens the panel and asks about that task", async () => {

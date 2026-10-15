@@ -30,8 +30,6 @@ export function TaskActions({ task, onUpdate, onEdit, onDelete }: Props) {
   const t = useT();
   const formId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const editRef = useRef<HTMLButtonElement>(null);
-  const deleteRef = useRef<HTMLButtonElement>(null);
   const [mode, setMode] = useState<Mode>("closed");
   const [day, setDay] = useState("");
   const [editing, setEditing] = useState(false);
@@ -56,10 +54,9 @@ export function TaskActions({ task, onUpdate, onEdit, onDelete }: Props) {
     if (day) apply({ due_date: day }, "movedDay");
   }
 
-  // A dialog closes without saving: put keyboard focus back on the button that opened it.
+  // A dialog closes without saving: Dialog puts keyboard focus back on the button that opened it.
   function closeEdit() {
     setEditing(false);
-    editRef.current?.focus();
   }
 
   async function saveEdit(changes: TaskChanges) {
@@ -91,7 +88,7 @@ export function TaskActions({ task, onUpdate, onEdit, onDelete }: Props) {
         <div id={`${formId}-panel`} className="mt-3 rounded-control bg-surface-muted p-3">
           {mode === "menu" && (
             <div className="flex flex-wrap gap-2">
-              <Button ref={editRef} icon={Pencil} onClick={() => setEditing(true)}>
+              <Button icon={Pencil} onClick={() => setEditing(true)}>
                 {t("actionEdit")}
               </Button>
               {active && (
@@ -105,7 +102,7 @@ export function TaskActions({ task, onUpdate, onEdit, onDelete }: Props) {
                   </Button>
                 </>
               )}
-              <Button ref={deleteRef} icon={Trash2} onClick={() => setDeleting(true)}>
+              <Button icon={Trash2} onClick={() => setDeleting(true)}>
                 {t("deleteButton")}
               </Button>
             </div>
@@ -141,10 +138,7 @@ export function TaskActions({ task, onUpdate, onEdit, onDelete }: Props) {
       {deleting && (
         <ConfirmDeleteDialog
           task={task}
-          onClose={() => {
-            setDeleting(false);
-            deleteRef.current?.focus();
-          }}
+          onClose={() => setDeleting(false)}
           onConfirm={() => {
             setDeleting(false);
             onDelete(task);

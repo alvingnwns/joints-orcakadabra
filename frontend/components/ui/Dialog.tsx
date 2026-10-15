@@ -8,7 +8,7 @@ export type DialogVariant = "center" | "side";
 
 const VARIANTS: Record<DialogVariant, string> = {
   center:
-    "m-auto w-[calc(100%-2rem)] max-w-md rounded-dialog border border-border bg-surface p-6 text-text shadow-lg backdrop:bg-text/40",
+    "m-auto w-[calc(100%-2rem)] max-w-md wrap-anywhere rounded-dialog border border-border bg-surface p-6 text-text shadow-lg backdrop:bg-text/40",
   // A slide-over panel on the right, full height.
   side: "m-0 ml-auto h-full max-h-none w-full max-w-md border-l border-border bg-surface p-0 text-text shadow-lg backdrop:bg-text/40",
 };
@@ -45,9 +45,19 @@ export function Dialog({
 
   useEffect(() => {
     const dialog = ref.current;
-    if (!dialog) return;
-    if (open && !dialog.open) dialog.showModal();
-    if (!open && dialog.open) dialog.close();
+    if (!dialog || !open) return;
+
+    // Remember who opened it, so focus goes back there when it closes. The browser does this
+    // for a dialog that is closed in place, but not when the dialog is removed from the page
+    // (the edit and delete dialogs are only mounted while open).
+    const active = document.activeElement;
+    const opener = active instanceof HTMLElement && !dialog.contains(active) ? active : null;
+    if (!dialog.open) dialog.showModal();
+
+    return () => {
+      if (dialog.open) dialog.close();
+      if (opener?.isConnected) opener.focus(); // not if the opener is gone, e.g. a deleted task
+    };
   }, [open]);
 
   return (

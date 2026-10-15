@@ -12,9 +12,22 @@ export class ApiError extends Error {
     public readonly kind: ApiErrorKind,
     message: string,
     public readonly status?: number,
+    /** The backend's error code for an "http" error, e.g. "ai_unavailable" or "no_tasks_found". */
+    public readonly detail?: string,
   ) {
     super(message);
     this.name = "ApiError";
+  }
+}
+
+/** The error code the backend sent, if any. FastAPI's list-style validation errors are ignored. */
+async function readDetail(response: Response): Promise<string | undefined> {
+  try {
+    const body: unknown = await response.json();
+    const detail = (body as { detail?: unknown } | null)?.detail;
+    return typeof detail === "string" ? detail : undefined;
+  } catch {
+    return undefined;
   }
 }
 
@@ -42,7 +55,12 @@ export async function apiFetch<T>(
   }
 
   if (!response.ok) {
-    throw new ApiError("http", `Request failed with status ${response.status}.`, response.status);
+    throw new ApiError(
+      "http",
+      `Request failed with status ${response.status}.`,
+      response.status,
+      await readDetail(response),
+    );
   }
   return (response.status === 204 ? undefined : await response.json()) as T;
 }

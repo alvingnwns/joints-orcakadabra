@@ -5,7 +5,12 @@ import { Button } from "@/components/ui/Button";
 import type { TranslationKey } from "@/lib/i18n/en";
 
 // The example questions from the design.
-const SUGGESTIONS: TranslationKey[] = ["chatSuggestFirst", "chatSuggestTwoHours", "chatSuggestWait"];
+const SUGGESTIONS: TranslationKey[] = [
+  "chatSuggestFirst",
+  "chatSuggestTwoHours",
+  "chatSuggestWait",
+  "chatSuggestMove",
+];
 
 /** Low-effort starting points: one tap asks the question. */
 export function SuggestedQuestions({ onAsk, disabled }: { onAsk: (q: string) => void; disabled: boolean }) {

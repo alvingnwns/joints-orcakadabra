@@ -11,6 +11,9 @@ export type Draft = {
   note: string | null;
 };
 
+/** What the person can change on a draft. The AI never sets importance, so it starts at "matters". */
+export type DraftFields = Draft & { impact_score: number };
+
 // The backend may wait 20 s for the AI and retry once, so allow longer than the default 8 s.
 const PARSE_TIMEOUT_MS = 45_000;
 

@@ -8,7 +8,7 @@ export type ButtonVariant = "primary" | "secondary" | "quiet" | "destructive";
 export type ButtonSize = "md" | "lg";
 
 const BASE =
-  "inline-flex items-center justify-center gap-2 rounded-control font-medium disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex shrink-0 items-center justify-center gap-2 rounded-control font-medium disabled:cursor-not-allowed disabled:opacity-50";
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: "bg-primary text-on-primary not-disabled:hover:bg-primary-hover",

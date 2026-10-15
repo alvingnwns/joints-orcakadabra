@@ -94,7 +94,6 @@ export function EditTaskDialog({ task, onSave, onClose }: Props) {
           {(control) => (
             <Input
               {...control}
-              autoFocus
               maxLength={MAX_TITLE}
               value={title}
               onChange={(event) => setTitle(event.target.value)}

@@ -60,7 +60,7 @@ export function ConnectionBanner() {
         <div className="border-b border-attention-text/20 bg-attention text-attention-text">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3 md:px-8">
             <Icon icon={WifiOff} size={20} />
-            <p className="min-w-48 flex-1 text-sm font-medium">{t("serverUnreachable")}</p>
+            <p className="min-w-[min(12rem,100%)] flex-1 text-sm font-medium">{t("serverUnreachable")}</p>
             <Button onClick={() => void retry()} disabled={retrying}>
               {t("tryAgain")}
             </Button>

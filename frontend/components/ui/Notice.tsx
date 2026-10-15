@@ -61,7 +61,7 @@ export function Notice({
   return (
     <div
       role={role ?? (tone === "error" ? "alert" : undefined)}
-      className={cn("flex gap-3 rounded-card p-4", style.box, className)}
+      className={cn("flex gap-3 rounded-card p-4 wrap-anywhere", style.box, className)}
     >
       {media ?? <Icon icon={style.glyph} size={20} className={cn("mt-0.5", style.icon)} />}
       <div className="min-w-0 flex-1">

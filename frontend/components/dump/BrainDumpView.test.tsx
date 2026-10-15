@@ -20,7 +20,7 @@ const draft = (title: string, extra: Partial<Draft> = {}): Draft => ({
   ...extra,
 });
 
-type ParseResult = Draft[] | number | "network"; // drafts, an error status, or no connection
+type ParseResult = Draft[] | number | "network" | "invalid"; // drafts, an error status, no connection, or an unusable AI answer
 
 /** Fake backend: /tasks/parse answers with each result in turn; /tasks/bulk can fail once. */
 function fakeBackend(parseResults: ParseResult[], options: { failSave?: boolean } = {}) {
@@ -31,6 +31,7 @@ function fakeBackend(parseResults: ParseResult[], options: { failSave?: boolean 
     if (pathname === "/tasks/parse") {
       const result = parseResults.length > 1 ? parseResults.shift()! : parseResults[0];
       if (result === "network") throw new TypeError("Failed to fetch");
+      if (result === "invalid") return json({ detail: "ai_invalid_output" }, 502);
       if (typeof result === "number") return json({ detail: "x" }, result);
       return json({ drafts: result });
     }
@@ -159,6 +160,52 @@ describe("BrainDumpView", () => {
     await userEvent.click(screen.getByRole("button", { name: "Sort it out for me" }));
 
     expect(await screen.findByLabelText("Task")).toHaveValue("Call mum");
+  });
+
+  it("tells an unusable AI answer apart from the AI being down, and keeps the text", async () => {
+    fakeBackend(["invalid"]);
+    renderView();
+    await dump("call mum tomorrow");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("answer didn't come out right");
+    expect(screen.getByRole("link", { name: "Add them manually instead" })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Everything on your mind/)).toHaveValue("call mum tomorrow");
+  });
+
+  it("says plainly that nothing was saved when the server can't be reached", async () => {
+    fakeBackend(["network"]);
+    renderView();
+    await dump("call mum tomorrow");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("can't reach the server");
+    expect(screen.getByRole("alert")).toHaveTextContent("nothing was sorted or saved");
+    // Adding by hand needs the server too, so it is not offered here.
+    expect(screen.queryByRole("link", { name: "Add them manually instead" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/Everything on your mind/)).toHaveValue("call mum tomorrow");
+  });
+
+  it("counts the characters", async () => {
+    fakeBackend([[]]);
+    renderView();
+
+    expect(await screen.findByText("0 of 5000 characters")).toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText(/Everything on your mind/), "hello");
+    expect(screen.getByText("5 of 5000 characters")).toBeInTheDocument();
+  });
+
+  it("marks every draft 'Not saved yet' and lets importance be chosen like for a manual task", async () => {
+    const fetchMock = fakeBackend([[draft("Call mum"), draft("Buy milk")]]);
+    renderView();
+    await dump("call mum, buy milk");
+
+    expect(await screen.findAllByText("Not saved yet")).toHaveLength(2);
+    expect(screen.getAllByLabelText("Matters").every((radio) => (radio as HTMLInputElement).checked)).toBe(true);
+
+    await userEvent.click(screen.getAllByLabelText("Really matters")[0]);
+    await userEvent.click(screen.getByRole("button", { name: "Save these" }));
+
+    await screen.findByRole("link", { name: "See today" });
+    expect(bodyOf(fetchMock, "/tasks/bulk").tasks.map((t: { impact_score: number }) => t.impact_score)).toEqual([5, 3]);
   });
 
   it("says gently when no tasks were found", async () => {

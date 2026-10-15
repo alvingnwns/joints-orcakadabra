@@ -18,13 +18,26 @@ import { useLocale } from "@/components/LocaleProvider";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Field";
+import { Icon } from "@/components/ui/Icon";
 import { Notice } from "@/components/ui/Notice";
 import { useWorkspace } from "@/components/WorkspaceProvider";
+import { ApiError } from "@/lib/api";
 import { askSchedule } from "@/lib/chat";
+import type { TranslationKey } from "@/lib/i18n/en";
 import { localDate } from "@/lib/tasks";
 
 type Ask = (question: string, taskId?: string) => void;
 type Pending = { question: string; taskId?: string };
+type Failure = Pending & { message: TranslationKey };
+
+/** Which calm message fits: no connection, the task is gone, or the helper is down. */
+function failureMessage(error: unknown): TranslationKey {
+  if (error instanceof ApiError) {
+    if (error.kind !== "http") return "chatErrorNetwork";
+    if (error.status === 404) return "chatErrorTask";
+  }
+  return "chatError";
+}
 
 const ChatContext = createContext<Ask>(() => {});
 
@@ -47,7 +60,7 @@ export function ChatPanel({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [question, setQuestion] = useState("");
   const [thinking, setThinking] = useState(false);
-  const [failed, setFailed] = useState<Pending | null>(null); // kept so "Try again" can resend
+  const [failed, setFailed] = useState<Failure | null>(null); // kept so "Try again" can resend
 
   // The question field gets focus whenever the panel opens.
   useEffect(() => {
@@ -70,8 +83,8 @@ export function ChatPanel({ children }: { children: ReactNode }) {
         ...(pending.taskId && { task_id: pending.taskId }),
       });
       setMessages((current) => [...current, { role: "helper", text: answer }]);
-    } catch {
-      setFailed(pending);
+    } catch (error) {
+      setFailed({ ...pending, message: failureMessage(error) });
     } finally {
       setThinking(false);
     }
@@ -95,16 +108,17 @@ export function ChatPanel({ children }: { children: ReactNode }) {
     <ChatContext.Provider value={ask}>
       {children}
 
-      <Button
-        variant="primary"
-        size="lg"
-        icon={MessageCircle}
+      {/* A compact round button on phones so it covers as little as possible; the words show on
+          larger screens, and screen readers always get them. */}
+      <button
+        type="button"
         aria-haspopup="dialog"
         onClick={openPanel}
-        className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-20 shadow-lg md:bottom-4 md:right-8"
+        className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-20 inline-flex min-h-12 min-w-12 items-center justify-center gap-2 rounded-control bg-primary font-medium text-on-primary shadow-lg not-disabled:hover:bg-primary-hover lg:bottom-4 lg:right-8 lg:px-5"
       >
-        {t("chatOpen")}
-      </Button>
+        <Icon icon={MessageCircle} size={22} />
+        <span className="sr-only lg:not-sr-only">{t("chatOpen")}</span>
+      </button>
 
       <Dialog open={open} onClose={() => setOpen(false)} labelledBy="chat-title" variant="side">
         <div className="flex h-full flex-col">
@@ -141,9 +155,14 @@ export function ChatPanel({ children }: { children: ReactNode }) {
             {failed && (
               <Notice
                 tone="error"
-                action={<Button onClick={() => void request(failed)}>{t("tryAgain")}</Button>}
+                action={
+                  // Asking about a task that no longer exists would fail the same way again.
+                  failed.message !== "chatErrorTask" && (
+                    <Button onClick={() => void request(failed)}>{t("tryAgain")}</Button>
+                  )
+                }
               >
-                {t("chatError")}
+                {t(failed.message)}
               </Notice>
             )}
             {messages.length === 0 && <SuggestedQuestions onAsk={ask} disabled={thinking} />}
@@ -161,7 +180,13 @@ export function ChatPanel({ children }: { children: ReactNode }) {
                 maxLength={MAX_QUESTION_LENGTH}
                 onChange={(event) => setQuestion(event.target.value)}
               />
-              <Button type="submit" variant="primary" icon={Send} disabled={thinking || !question.trim()}>
+              <Button
+                type="submit"
+                variant="primary"
+                icon={Send}
+                disabled={thinking || !question.trim()}
+                className="whitespace-nowrap"
+              >
                 {t("chatSend")}
               </Button>
             </div>

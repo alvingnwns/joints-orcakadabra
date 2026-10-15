@@ -41,22 +41,22 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 md:px-8">
           <div className="flex items-baseline gap-3">
             <span className="text-xl font-semibold">{t("appName")}</span>
-            <span className="hidden text-sm text-text-secondary sm:inline">{t("tagline")}</span>
+            <span className="hidden text-sm text-text-secondary xl:inline">{t("tagline")}</span>
           </div>
 
           <nav
             aria-label={t("navLabel")}
-            className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] md:static md:z-auto md:border-0 md:bg-transparent md:pb-0"
+            className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] lg:static lg:z-auto lg:border-0 lg:bg-transparent lg:pb-0"
           >
-            <ul className="mx-auto flex max-w-xl md:max-w-none md:gap-1">
+            <ul className="mx-auto flex max-w-xl lg:max-w-none lg:gap-1">
               {NAV.map((item) => {
                 const current = pathname === item.href;
                 return (
-                  <li key={item.href} className="flex-1 md:flex-none">
+                  <li key={item.href} className="min-w-0 flex-1 lg:flex-none">
                     <Link
                       href={item.href}
                       aria-current={current ? "page" : undefined}
-                      className={`m-1 flex min-h-14 flex-col items-center justify-center gap-1 rounded-control px-1 text-meta md:m-0 md:min-h-11 md:flex-row md:gap-2 md:px-4 md:text-base ${
+                      className={`m-1 flex min-h-14 flex-col items-center justify-center gap-1 rounded-control px-1 text-meta lg:m-0 lg:min-h-11 lg:flex-row lg:gap-2 lg:px-4 lg:text-base ${
                         current
                           ? "bg-primary-soft font-semibold text-primary"
                           : "font-medium text-text hover:bg-surface-muted"
@@ -71,7 +71,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </ul>
           </nav>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
             <AboutDialog />
             <LanguageSwitcher />
           </div>
@@ -82,7 +82,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main
         id="main"
         tabIndex={-1}
-        className="mx-auto w-full max-w-6xl flex-1 px-4 pt-6 pb-[calc(10rem+env(safe-area-inset-bottom))] md:px-8 md:pt-8 md:pb-24"
+        className="mx-auto w-full max-w-6xl flex-1 px-4 pt-6 pb-[calc(10rem+env(safe-area-inset-bottom))] md:px-8 md:pt-8 lg:pb-24"
       >
         <WorkspaceProvider>
           <ChatPanel>{children}</ChatPanel>

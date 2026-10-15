@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { LoaderCircle } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { BrainDumpInput } from "@/components/dump/BrainDumpInput";
 import { DraftReview, type EditableDraft } from "@/components/dump/DraftReview";
-import { Illustration } from "@/components/illustrations/Illustration";
 import { useLocale } from "@/components/LocaleProvider";
 import { buttonClasses } from "@/components/ui/Button";
+import { Icon } from "@/components/ui/Icon";
 import { Notice } from "@/components/ui/Notice";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { ApiError } from "@/lib/api";
@@ -15,7 +16,17 @@ import { parseBrainDump, saveDrafts } from "@/lib/dump";
 import { localDate } from "@/lib/tasks";
 
 type Phase = "input" | "parsing" | "review" | "saving" | "saved";
-type ParseError = "ai" | "none" | null;
+type ParseError = "unavailable" | "invalid" | "network" | "none" | null;
+
+/** Which calm message fits: no connection, the AI's answer was unusable, nothing found, or down. */
+function classify(error: unknown): Exclude<ParseError, null> {
+  if (error instanceof ApiError) {
+    if (error.kind !== "http") return "network"; // no connection, or it took too long
+    if (error.status === 422) return "none"; // the AI found no tasks in the text
+    if (error.detail === "ai_invalid_output") return "invalid";
+  }
+  return "unavailable";
+}
 
 /** Brain dump → AI drafts → review → save. The typed text is never lost on an error. */
 export function BrainDumpView() {
@@ -33,12 +44,13 @@ export function BrainDumpView() {
     setParseError(null);
     try {
       const result = await parseBrainDump(workspaceId, text.trim(), localDate(0), locale);
-      setDrafts(result.drafts.map((draft) => ({ ...draft, key: nextKey.current++ })));
+      setDrafts(
+        result.drafts.map((draft) => ({ ...draft, impact_score: 3, key: nextKey.current++ })),
+      );
       setSaveFailed(false);
       setPhase("review");
     } catch (error) {
-      // 422 means the AI found no tasks; everything else is "the helper is unavailable".
-      setParseError(error instanceof ApiError && error.status === 422 ? "none" : "ai");
+      setParseError(classify(error));
       setPhase("input");
     }
   }
@@ -51,7 +63,7 @@ export function BrainDumpView() {
         workspaceId,
         drafts.map((draft) => ({
           title: draft.title.trim(),
-          impact_score: 3,
+          impact_score: draft.impact_score,
           ...(draft.due_date && { due_date: draft.due_date }),
           ...(draft.estimated_minutes && { estimated_minutes: draft.estimated_minutes }),
         })),
@@ -65,13 +77,19 @@ export function BrainDumpView() {
   }
 
   const reviewing = phase === "review" || phase === "saving";
+  // Adding by hand also needs the server, so it is only offered when the AI itself is the problem.
+  const manualLink = parseError === "unavailable" || parseError === "invalid";
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <h1 className="text-display font-semibold">{t("dumpTitle")}</h1>
 
-      {/* Announces progress and results to screen readers. */}
-      <p role="status" className={phase === "parsing" ? "text-text-secondary" : "sr-only"}>
+      {/* Announces progress and results to screen readers; visible while the AI is working. */}
+      <p
+        role="status"
+        className={phase === "parsing" ? "flex items-center gap-2 text-text-secondary" : "sr-only"}
+      >
+        {phase === "parsing" && <Icon icon={LoaderCircle} className="motion-safe:animate-spin" />}
         {phase === "parsing" && t("dumpParsing")}
         {reviewing && t("draftsTitle")}
         {phase === "saved" && t("draftsSaved")}
@@ -79,27 +97,30 @@ export function BrainDumpView() {
 
       {(phase === "input" || phase === "parsing") && (
         <>
-          <Illustration
-            name={phase === "parsing" ? "untangling" : "brain-dump"}
-            width={180}
-            className={phase === "parsing" ? "motion-safe:animate-pulse" : ""}
-          />
           <BrainDumpInput
             text={text}
             onChange={setText}
             onSubmit={() => void handleParse()}
             busy={phase === "parsing"}
           />
-          {parseError === "ai" && (
+          {parseError && parseError !== "none" && (
             <Notice
               tone="error"
               action={
-                <Link href="/" className={buttonClasses()}>
-                  {t("dumpManual")}
-                </Link>
+                manualLink && (
+                  <Link href="/" className={buttonClasses()}>
+                    {t("dumpManual")}
+                  </Link>
+                )
               }
             >
-              {t("dumpAiError")}
+              {t(
+                parseError === "invalid"
+                  ? "dumpInvalid"
+                  : parseError === "network"
+                    ? "dumpNetwork"
+                    : "dumpAiError",
+              )}
             </Notice>
           )}
           {parseError === "none" && <Notice tone="error">{t("dumpNoTasks")}</Notice>}

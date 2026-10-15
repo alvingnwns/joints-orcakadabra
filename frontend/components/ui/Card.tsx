@@ -24,5 +24,5 @@ const PADDING = { none: "", md: "p-4", lg: "p-6" };
 
 export function Card({ as = "div", tone = "surface", padding = "md", className, ...rest }: Props) {
   const Tag = as as ElementType; // a cast, so TypeScript doesn't narrow the props to one tag
-  return <Tag className={cn("rounded-card", TONES[tone], PADDING[padding], className)} {...rest} />;
+  return <Tag className={cn("wrap-anywhere rounded-card", TONES[tone], PADDING[padding], className)} {...rest} />;
 }

@@ -11,6 +11,7 @@ export type Task = {
   impact_score: number;
   status: TaskStatus;
   completed_at?: string | null; // ISO timestamp
+  created_at?: string; // ISO timestamp
 };
 
 export type NewTask = {

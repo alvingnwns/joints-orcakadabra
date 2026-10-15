@@ -1,9 +1,12 @@
 "use client";
 
+import { CircleQuestionMark } from "lucide-react";
 import { type ReactNode, useId } from "react";
 
+import { useAskChat } from "@/components/chat/ChatPanel";
 import { useLocale } from "@/components/LocaleProvider";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { taskReasons } from "@/lib/explain";
 import { formatDate } from "@/lib/i18n";
@@ -42,6 +45,7 @@ export function TaskItem({
   children,
 }: Props) {
   const { t, locale } = useLocale();
+  const askChat = useAskChat();
   const titleId = useId();
   const done = task.status === "done";
   const priority = task.priority_label;
@@ -90,6 +94,19 @@ export function TaskItem({
       </label>
 
       <TaskActions task={task} onUpdate={onUpdate} onEdit={onEdit} onDelete={onDelete} />
+      {/* Any ranked task can be asked about, not only the top three. */}
+      {priority && (
+        <Button
+          variant="quiet"
+          icon={CircleQuestionMark}
+          aria-haspopup="dialog"
+          onClick={() => askChat(`${t("chatWhy")} (${task.title})`, task.id)}
+          className="mt-3"
+        >
+          {t("chatWhy")}
+          <span className="sr-only"> ({task.title})</span>
+        </Button>
+      )}
       {children}
     </Card>
   );

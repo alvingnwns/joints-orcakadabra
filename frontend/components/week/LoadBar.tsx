@@ -1,6 +1,7 @@
 "use client";
 
 import { useT } from "@/components/LocaleProvider";
+import { fill } from "@/lib/i18n";
 import type { TranslationKey } from "@/lib/i18n/en";
 
 const BUSY_RATIO = 0.75; // from 75% of capacity a day reads as "fairly busy"
@@ -29,7 +30,7 @@ export function LoadBar({ totalMinutes, capacity, isHeavy }: Props) {
       </span>
       <span className="mt-1 block text-sm">{t(loadLabel(totalMinutes, capacity, isHeavy))}</span>
       <span className="block text-meta text-text-secondary">
-        {totalMinutes} / {capacity} {t("minutesShort")}
+        {fill(t("loadMinutes"), { planned: totalMinutes, capacity })}
       </span>
     </span>
   );

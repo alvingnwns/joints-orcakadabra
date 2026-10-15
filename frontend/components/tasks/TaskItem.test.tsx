@@ -90,6 +90,17 @@ describe("TaskItem", () => {
     expect(screen.queryByText(/You marked it/)).not.toBeInTheDocument();
   });
 
+  it("offers 'Why is this here?' on every ranked task, and not on unranked ones", () => {
+    const { unmount } = renderItem({ ...task, priority_label: "whenever" });
+    expect(
+      screen.getByRole("button", { name: /^Why is this here\?\s*\(Write report\)$/ }),
+    ).toBeInTheDocument();
+    unmount();
+
+    renderItem(task);
+    expect(screen.queryByRole("button", { name: /Why is this here/ })).not.toBeInTheDocument();
+  });
+
   it("has no always-visible Delete button; delete lives in the More menu", async () => {
     renderItem();
 

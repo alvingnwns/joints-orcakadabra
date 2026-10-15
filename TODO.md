@@ -187,32 +187,30 @@ Known limits:
 - Each card builds its Edit/Delete dialogs only when opened, so a long list stays light.
 - Not checked in a real browser (layout of the menu, dialogs, long titles).
 
-### CP-U4: Week and All tasks
-- [ ] Week: day buttons with date, task count, "90 of 240 minutes" text and bar, heavy state with text. Layout for 320 to 1440 px. "Add task" for the selected day (date pre-filled). Edit through `TaskCard`.
-- [ ] New route `/tasks` (All tasks): tabs Active, Upcoming, Unscheduled, Later, Completed. Data from `GET /tasks` and client-side filtering only. Title search. Sorting limited to what is real: due date and created date (the backend ranking is shown only on Today).
-- [ ] No-results and empty states per tab. Task counts per tab.
-- [ ] Nothing falls outside every view: add a test that a task due in 30 days appears under Upcoming.
-- [ ] Note in the UI and report: the list is not paginated because the API is not.
-- [ ] Tests: filters, search, empty tabs, far-future task visible.
+### CP-U4: Week and All tasks (done)
+- [x] Week: each day shows its date, task count ("3 tasks") and "420 of 240 minutes" with a bar and a word label (Room to breathe / Fairly busy / Full day). The grid is 2 columns on phones, 4 on tablets, 7 from 768 px. The selected day has an add form that starts with that day's date ("It will be set for Thu, Oct 15."), and each day's tasks use the same card and menu (edit, move, delete) as Today.
+- [x] New `/tasks` page (All tasks): lists Active, Upcoming, No date, Later and Completed with a count on each, title search, and sorting by due date or recently added (plus recently completed on the Completed list). It uses `GET /tasks` and filters in the browser; the logic is in `lib/library.ts`. Every task belongs to at least one list (a test checks every status with and without a date), and a task due in 30 days is under Upcoming.
+- [x] Empty state per list, a "no tasks match" message for searches, and a live count ("4 tasks") announced to screen readers.
+- Deviation: I did not add a visible note that the list isn't paginated. It would only add noise for a person using the app; it is documented here and in the report.
 
-### CP-U5: Brain dump and AI companion
-- [ ] Dump: roomy input, example text, character count, processing state, draft cards using the same fields as Edit (including importance), uncertain fields highlighted with the AI note, "Not saved yet" label until confirmation, saved confirmation with link.
-- [ ] `ApiError` carries `detail`; separate messages for: no tasks, AI unavailable, invalid AI response, network or timeout. Text always kept.
-- [ ] Chat: clearer header and caption ("suggestions only, nothing changes unless you do it"), better message layout, per-failure messages, retry. Suggested questions: keep the 3, add "What can I move to another day?". "Why this task?" on every card that has a ranking, not only the top 3.
-- [ ] Tests: each error path, importance edit in drafts, retry in chat.
+### CP-U5: Brain dump and AI companion (done)
+- [x] Brain dump: bigger input (10 rows), character count, a spinner and "Untangling…" while the AI works, drafts labelled "Not saved yet", an importance choice on every draft (same picker as manual entry), and the uncertain-field highlight with the AI's note. The drafts have title, date, time and importance; they do not have a notes field because the AI never produces notes.
+- [x] `ApiError` now carries the backend's error code. The page tells apart: no tasks found, AI unavailable, an unusable AI answer, and no connection or timeout. The typed text is always kept; the "add them manually" link appears only when adding by hand could work (not when the server itself is unreachable).
+- [x] Chat: caption says answers are suggestions and nothing changes unless you change it; a fourth starting question ("What can I move to another day?"); separate messages for no connection and for a task that no longer exists (no useless retry there); "Why is this here?" now appears on every ranked task, not only the top three.
+- Per the illustration decision, the brain dump header and "untangling" pictures are gone (the chat's empty-state picture stays).
 
-### CP-U6: Accessibility and responsive polish
-- [ ] Keyboard walk-through of every flow and dialog; focus order and return.
-- [ ] Contrast re-check of every used pair (script kept in the report).
-- [ ] 320, 375, 414, 768, 1024, 1440 px checks; long titles; long Indonesian strings.
-- [ ] Reduced motion; text zoom to 200 percent; no color-only status.
-- [ ] Hallmark slop test and pre-emit critique run on each page.
-- [ ] Lighthouse accessibility on Today, Week, All tasks, Dump (needs Chrome; if not available I will say so).
+### CP-U6: Accessibility and responsive polish (done, verified in a real browser)
+I ran the built app against the real backend and database, drove headless Edge 155, and used axe-core 4.14 (the engine behind Lighthouse's accessibility score) with the WCAG 2.0/2.1/2.2 A and AA rules plus best practices. The tools lived in a temp folder outside the repo and are deleted.
+- [x] 40 page checks (4 pages x 5 widths: 320, 375, 768, 1280, 1440 x 2 languages): 0 accessibility violations, 0 pages wider than the screen, 0 touch targets under 44 px, 0 console errors.
+- [x] 32 interaction checks, all passing: tab order and a visible focus ring on every stop; skip link first; edit and delete dialogs trap Tab, close with Esc, return focus to the button that opened them, and ask before discarding changes; the heavy-load review moves nothing until agreed; chat and brain dump work with the real AI; adding on a Week day; far-future task under Upcoming; reduced-motion switches the toast animation off (and it is on without it); 200 percent text size on all four pages with no sideways scroll and the nav on screen.
+- [x] Bugs this found that the unit tests could not (all fixed): the Add button squashed until its label broke into "A / d / d"; keyboard focus lost to the top of the page after closing a dialog (browsers only restore it for dialogs that stay in the page; ours are removed); long unbroken words running out of cards and widening the page; the header taking three rows at 768 px (the bottom bar now stays until 1024 px); the language dropdown, the title field and the date field overflowing at 200 percent text; the large chat button covering the first card on phones (now a compact round icon button with the same accessible name).
+- [x] Contrast: `app/tokens.test.ts` still checks 28 pairs from the real CSS.
+- Not done or different from the plan: no 414 px and no 1024 px width in the browser runs; Lighthouse itself was not run (axe-core was); Hallmark's formal 57-gate slop test and written pre-emit critique were not run, I judged the screens by eye from the screenshots instead; the screen-reader announcements were checked in code and unit tests, not with a real screen reader.
 
-### CP-U7: Final verification and report
-- [ ] Lint, typecheck, tests, build, secret scan, backend tests unchanged.
-- [ ] Manual flows listed and what was and was not checked.
-- [ ] Final deliverables from `ui-ux.md` section 19.
+### CP-U7: Final verification (done)
+- Frontend: `npm run typecheck` pass, `npm run lint` pass, `npm test` 244 passed in 23 files, `npm run build` pass, secret scan 365 files with 0 hits.
+- Backend (untouched): ruff clean, 34 files formatted, 152 tests passed, 0 backend files changed.
+- Final deliverables are in this file and in `frontend/README.md` (design tokens and component conventions).
 
 ---
 

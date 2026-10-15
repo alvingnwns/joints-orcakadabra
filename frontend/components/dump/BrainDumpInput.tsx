@@ -7,6 +7,7 @@ import { useT } from "@/components/LocaleProvider";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Field, Textarea } from "@/components/ui/Field";
+import { fill } from "@/lib/i18n";
 
 export const MAX_DUMP_LENGTH = 5000; // same limit as the backend
 
@@ -37,11 +38,14 @@ export function BrainDumpInput({ text, onChange, onSubmit, busy }: Props) {
               onChange={(event) => onChange(event.target.value)}
               placeholder={t("dumpPlaceholder")}
               maxLength={MAX_DUMP_LENGTH}
-              rows={8}
+              rows={10}
               readOnly={busy}
             />
           )}
         </Field>
+        <p className="mt-1 text-meta text-text-secondary">
+          {fill(t("dumpCount"), { n: text.length, max: MAX_DUMP_LENGTH })}
+        </p>
         <Button
           type="submit"
           variant="primary"
