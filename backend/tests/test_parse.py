@@ -7,8 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.config import Settings
-from app.main import app
-from app.services.llm import LLMClient, LLMInvalidOutput, LLMUnavailable, get_llm
+from app.services.llm import LLMClient, LLMInvalidOutput, LLMUnavailable
 from tests.test_tasks_crud import new_task, new_workspace
 
 TODAY = date(2026, 10, 14)  # a Wednesday
@@ -30,35 +29,12 @@ def draft(**fields) -> dict:
         "title": "Call mum",
         "due_date": None,
         "estimated_minutes": None,
+        "estimate_is_guess": False,
+        "estimate_reason": None,
         "needs_confirmation": False,
         "note": None,
         **fields,
     }
-
-
-class FakeLLM:
-    """Stands in for LLMClient: returns `result` or raises it, and records the prompt."""
-
-    def __init__(self, result):
-        self.result = result
-        self.messages = None
-
-    def complete_json(self, *, messages, schema_name, schema):
-        self.messages = messages
-        if isinstance(self.result, Exception):
-            raise self.result
-        return self.result
-
-
-@pytest.fixture
-def fake_llm():
-    def install(result) -> FakeLLM:
-        fake = FakeLLM(result)
-        app.dependency_overrides[get_llm] = lambda: fake
-        return fake
-
-    yield install
-    app.dependency_overrides.pop(get_llm, None)
 
 
 def parse(client: TestClient, headers: dict, text: str = USER_TEXT, locale: str = "en"):
@@ -213,6 +189,59 @@ def test_prompt_includes_today_the_week_ahead_and_the_locale(client: TestClient,
     assert "Friday 2026-10-16" in system["content"]
     assert "Indonesian" in system["content"]
     assert USER_TEXT in user["content"]  # the notes go in the user message, as data
+
+
+def test_parse_passes_the_ai_estimate_and_its_reason_through(client: TestClient, fake_llm):
+    fake_llm(
+        {
+            "drafts": [
+                draft(
+                    title="Call the bank",
+                    estimated_minutes=15,
+                    estimate_is_guess=True,
+                    estimate_reason="A phone call like this usually takes 10 to 15 minutes.",
+                ),
+                draft(title="Write the 2 hour report", estimated_minutes=120),
+            ]
+        }
+    )
+
+    drafts = parse(client, new_workspace(client)).json()["drafts"]
+
+    assert drafts[0]["estimated_minutes"] == 15
+    assert drafts[0]["estimate_is_guess"] is True
+    assert drafts[0]["estimate_reason"].startswith("A phone call")
+    assert drafts[1]["estimate_is_guess"] is False  # the person said 2 hours
+
+
+def test_parse_drops_a_reason_when_there_is_no_estimate(client: TestClient, fake_llm):
+    fake_llm(
+        {
+            "drafts": [
+                draft(
+                    estimated_minutes=None, estimate_is_guess=True, estimate_reason="Just a hunch"
+                )
+            ]
+        }
+    )
+
+    only = parse(client, new_workspace(client)).json()["drafts"][0]
+
+    assert only["estimated_minutes"] is None
+    assert only["estimate_is_guess"] is False and only["estimate_reason"] is None
+
+
+def test_prompt_asks_the_model_to_reason_about_the_task_and_explain_in_the_users_language(
+    client: TestClient, fake_llm
+):
+    fake = fake_llm({"drafts": [draft()]})
+
+    parse(client, new_workspace(client), locale="id")
+
+    system = fake.messages[0]["content"]
+    assert "never null for a real task" in system
+    assert "what this specific task actually involves" in system
+    assert "estimate_reason: one short sentence in Indonesian" in system
 
 
 def test_parse_fixes_small_problems_instead_of_failing(client: TestClient, fake_llm):

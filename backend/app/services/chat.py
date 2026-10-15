@@ -23,7 +23,7 @@ def _impact(score: int) -> str:
 
 def _task(item: ScoredTask) -> dict[str, Any]:
     task = item.task
-    return {
+    details: dict[str, Any] = {
         "title": task.title,
         "due_date": task.due_date.isoformat() if task.due_date else None,
         "estimated_minutes": task.estimated_minutes,
@@ -31,14 +31,19 @@ def _task(item: ScoredTask) -> dict[str, Any]:
         "label": item.priority.label,
         "reasons": item.priority.reasons,
     }
+    if task.description:
+        # What the task really involves, so answers (and duration guesses) fit the actual task.
+        details["notes"] = task.description[:300]
+    return details
 
 
-def schedule_context(tasks: list[Task], today: date) -> dict[str, Any]:
+def schedule_context(tasks: list[Task], today: date, capacity: int | None = None) -> dict[str, Any]:
     """Today and the week ahead, as the app already ranked them."""
-    day = build_today(tasks, today)
-    week = build_week(tasks, today)
+    limit = DAILY_CAPACITY_MINUTES if capacity is None else capacity
+    day = build_today(tasks, today, limit)
+    week = build_week(tasks, today, limit)
     return {
-        "daily_capacity_minutes": DAILY_CAPACITY_MINUTES,
+        "daily_capacity_minutes": limit,
         "today": {
             "start_here": [_task(item) for item in day.top],
             "also_today": [_task(item) for item in day.rest],
@@ -77,6 +82,8 @@ def task_context(task: Task, tasks: list[Task], today: date) -> dict[str, Any]:
         "estimated_minutes": task.estimated_minutes,
         "impact": _impact(task.impact_score),
     }
+    if task.description:
+        details["notes"] = task.description[:300]
     if position is not None:
         details.update(_task(ranked[position - 1]))
     return {

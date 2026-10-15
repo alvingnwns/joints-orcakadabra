@@ -42,7 +42,7 @@ def chat_query(
     tasks = list(db.scalars(select(Task).where(Task.workspace_id == workspace.id)))
 
     if body.task_id is None:
-        context = schedule_context(tasks, body.today)
+        context = schedule_context(tasks, body.today, workspace.daily_capacity_minutes)
     else:
         task = next((task for task in tasks if task.id == body.task_id), None)
         if task is None:  # another workspace's task looks like it does not exist

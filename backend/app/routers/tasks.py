@@ -14,6 +14,8 @@ from app.schemas import (
     BulkCreate,
     DayOut,
     DelaySuggestionOut,
+    EstimateOut,
+    EstimateRequest,
     HeavyLoadOut,
     ParseRequest,
     ScheduledTaskOut,
@@ -23,6 +25,7 @@ from app.schemas import (
     TodayOut,
     WeekOut,
 )
+from app.services.estimate import estimate_task
 from app.services.llm import LLMClient, LLMInvalidOutput, LLMUnavailable, get_llm
 from app.services.parse import Draft, parse_brain_dump
 from app.services.priority import compute_priority
@@ -104,6 +107,26 @@ def parse_tasks(
     return DraftsOut(drafts=drafts)
 
 
+@router.post(
+    "/estimate",
+    response_model=EstimateOut,
+    responses={502: {"description": "ai_unavailable or ai_invalid_output"}},
+)
+def estimate_duration(
+    body: EstimateRequest, workspace: CurrentWorkspace, llm: Annotated[LLMClient, Depends(get_llm)]
+) -> EstimateOut:
+    """Suggests how long one task will take, with a reason. Nothing is saved or changed."""
+    try:
+        estimate = estimate_task(llm, body.title, body.description, body.locale)
+    except LLMUnavailable as error:
+        raise HTTPException(status_code=502, detail="ai_unavailable") from error
+    except LLMInvalidOutput as error:
+        raise HTTPException(status_code=502, detail="ai_invalid_output") from error
+    return EstimateOut(
+        estimated_minutes=estimate.estimated_minutes, estimate_reason=estimate.estimate_reason
+    )
+
+
 @router.post("/bulk", response_model=list[TaskOut], status_code=201)
 def create_tasks_bulk(body: BulkCreate, db: DbSession, workspace: CurrentWorkspace) -> list[Task]:
     """Saves approved AI drafts in one transaction (C7)."""
@@ -169,7 +192,7 @@ def _day(day: date | None, bucket: Bucket) -> DayOut:
 @router.get("/today", response_model=TodayOut)
 def today_schedule(db: DbSession, workspace: CurrentWorkspace, today: UserToday = None) -> TodayOut:
     today = today or date.today()
-    result = build_today(_active_tasks(db, workspace), today)
+    result = build_today(_active_tasks(db, workspace), today, workspace.daily_capacity_minutes)
     load, suggestion = result.heavy_load, result.delay_suggestion
     return TodayOut(
         today=today,
@@ -194,7 +217,7 @@ def today_schedule(db: DbSession, workspace: CurrentWorkspace, today: UserToday 
 @router.get("/week", response_model=WeekOut)
 def week_schedule(db: DbSession, workspace: CurrentWorkspace, today: UserToday = None) -> WeekOut:
     today = today or date.today()
-    result = build_week(_active_tasks(db, workspace), today)
+    result = build_week(_active_tasks(db, workspace), today, workspace.daily_capacity_minutes)
     return WeekOut(
         today=today,
         capacity_minutes=result.capacity_minutes,

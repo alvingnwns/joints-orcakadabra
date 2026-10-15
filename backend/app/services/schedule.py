@@ -99,8 +99,9 @@ def _total_minutes(items: list[ScoredTask]) -> int:
     return sum(_minutes(item) for item in items)
 
 
-def heavy_reason(items: list[ScoredTask]) -> HeavyReason | None:
-    if _total_minutes(items) > DAILY_CAPACITY_MINUTES:
+def heavy_reason(items: list[ScoredTask], capacity: int | None = None) -> HeavyReason | None:
+    limit = DAILY_CAPACITY_MINUTES if capacity is None else capacity
+    if _total_minutes(items) > limit:
         return "over_capacity"
     long_tasks = sum(1 for item in items if _minutes(item) > LONG_TASK_MINUTES)
     if long_tasks > MAX_LONG_TASKS_PER_DAY:
@@ -108,11 +109,13 @@ def heavy_reason(items: list[ScoredTask]) -> HeavyReason | None:
     return None
 
 
-def _bucket(items: list[ScoredTask]) -> Bucket:
-    return Bucket(items, _total_minutes(items), heavy_reason(items) is not None)
+def _bucket(items: list[ScoredTask], capacity: int | None = None) -> Bucket:
+    return Bucket(items, _total_minutes(items), heavy_reason(items, capacity) is not None)
 
 
-def build_today(tasks: list[Task], today: date) -> Today:
+def build_today(tasks: list[Task], today: date, capacity: int | None = None) -> Today:
+    """`capacity` is the workspace's daily minutes; the default constant is used when it is None."""
+    limit = DAILY_CAPACITY_MINUTES if capacity is None else capacity
     ranked = rank(tasks, today)
     top = ranked[:TOP_COUNT]
     # "Also today": what is due today or past its date, plus undated tasks (they fit any day).
@@ -120,7 +123,7 @@ def build_today(tasks: list[Task], today: date) -> Today:
 
     # Today's load is what is actually planned for today: due today or past its date.
     planned = [item for item in ranked if item.due_date is not None and item.due_date <= today]
-    reason = heavy_reason(planned)
+    reason = heavy_reason(planned, limit)
     if reason is None:
         return Today(top, rest, None, None)
 
@@ -129,12 +132,13 @@ def build_today(tasks: list[Task], today: date) -> Today:
     # always comes with something concrete to move (C5).
     not_due_today = [item for item in planned if item.due_date != today]
     suggestion = (not_due_today or planned)[-1]
-    load = HeavyLoad(reason, _total_minutes(planned), DAILY_CAPACITY_MINUTES)
+    load = HeavyLoad(reason, _total_minutes(planned), limit)
     return Today(top, rest, load, suggestion)
 
 
-def build_week(tasks: list[Task], today: date) -> Week:
+def build_week(tasks: list[Task], today: date, capacity: int | None = None) -> Week:
     """Seven days from `today`. Past-date tasks count on today; later ones are left out."""
+    limit = DAILY_CAPACITY_MINUTES if capacity is None else capacity
     ranked = rank(tasks, today)
     days = [today + timedelta(days=offset) for offset in range(WEEK_DAYS)]
     by_day: dict[date, list[ScoredTask]] = {day: [] for day in days}
@@ -149,7 +153,7 @@ def build_week(tasks: list[Task], today: date) -> Week:
             by_day[item.due_date].append(item)
 
     return Week(
-        days=[(day, _bucket(by_day[day])) for day in days],
-        unscheduled=_bucket(unscheduled),
-        capacity_minutes=DAILY_CAPACITY_MINUTES,
+        days=[(day, _bucket(by_day[day], limit)) for day in days],
+        unscheduled=_bucket(unscheduled, limit),
+        capacity_minutes=limit,
     )

@@ -6,6 +6,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
 
+from app.config import CAPACITY_MAX_MINUTES, CAPACITY_MIN_MINUTES, CAPACITY_STEP_MINUTES
 from app.models import SourceType, TaskStatus
 
 # Limits from IMPLEMENTATION.md (CP5).
@@ -19,7 +20,31 @@ class WorkspaceOut(BaseModel):
 
     id: uuid.UUID
     name: str | None
+    daily_capacity_minutes: int
     created_at: datetime
+
+
+class WorkspaceUpdate(BaseModel):
+    """Settings the person can change. Only the fields that are sent are changed."""
+
+    daily_capacity_minutes: (
+        Annotated[
+            int,
+            Field(
+                ge=CAPACITY_MIN_MINUTES, le=CAPACITY_MAX_MINUTES, multiple_of=CAPACITY_STEP_MINUTES
+            ),
+        ]
+        | None
+    ) = None
+
+    @model_validator(mode="after")
+    def _capacity_cannot_be_cleared(self) -> "WorkspaceUpdate":
+        if (
+            "daily_capacity_minutes" in self.model_fields_set
+            and self.daily_capacity_minutes is None
+        ):
+            raise ValueError("daily_capacity_minutes cannot be null")
+        return self
 
 
 class TaskCreate(BaseModel):
@@ -127,6 +152,21 @@ class ParseRequest(BaseModel):
     text: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=5000)]
     today: date  # the user's local date (Q1), used to resolve "tomorrow" or "Friday"
     locale: Literal["en", "id"] = "en"
+
+
+class EstimateRequest(BaseModel):
+    """Ask the AI how long one task will take, from its title and optional notes."""
+
+    title: Title
+    description: (
+        Annotated[str, StringConstraints(strip_whitespace=True, max_length=2000)] | None
+    ) = None
+    locale: Literal["en", "id"] = "en"
+
+
+class EstimateOut(BaseModel):
+    estimated_minutes: int
+    estimate_reason: str
 
 
 class BulkCreate(BaseModel):

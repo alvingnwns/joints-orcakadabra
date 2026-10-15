@@ -11,6 +11,7 @@ from datetime import date, datetime
 from sqlalchemy import Date, DateTime, Enum, ForeignKey, Integer, String, Text, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column
 
+from app.config import DAILY_CAPACITY_MINUTES
 from app.db import Base
 
 
@@ -46,6 +47,10 @@ class Workspace(Base):
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     name: Mapped[str | None] = mapped_column(String(100))
+    # How many minutes of work the person finds comfortable in a day (30 to 720, steps of 15).
+    daily_capacity_minutes: Mapped[int] = mapped_column(
+        Integer, default=DAILY_CAPACITY_MINUTES, server_default=str(DAILY_CAPACITY_MINUTES)
+    )
 
 
 class Task(Base):

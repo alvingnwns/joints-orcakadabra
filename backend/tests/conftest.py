@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.main import app
+from app.services.llm import get_llm
 
 TEST_DATABASE_URL = os.environ.get(
     "TEST_DATABASE_URL", "postgresql+psycopg://orca:orca@127.0.0.1:5432/orca_test"
@@ -56,3 +57,30 @@ def client(db_session: Session) -> Iterator[TestClient]:
     app.dependency_overrides[get_db] = lambda: db_session
     yield TestClient(app)
     app.dependency_overrides.clear()
+
+
+class FakeLLM:
+    """Stands in for LLMClient's JSON calls: returns `result` or raises it, records the prompt."""
+
+    def __init__(self, result):
+        self.result = result
+        self.messages = None
+
+    def complete_json(self, *, messages, schema_name, schema):
+        self.messages = messages
+        if isinstance(self.result, Exception):
+            raise self.result
+        return self.result
+
+
+@pytest.fixture
+def fake_llm():
+    """Call it with the result the model should give (or an exception it should raise)."""
+
+    def install(result) -> FakeLLM:
+        fake = FakeLLM(result)
+        app.dependency_overrides[get_llm] = lambda: fake
+        return fake
+
+    yield install
+    app.dependency_overrides.pop(get_llm, None)

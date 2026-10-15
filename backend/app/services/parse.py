@@ -24,6 +24,8 @@ DRAFTS_SCHEMA = {
                     "title": {"type": "string"},
                     "due_date": {"type": ["string", "null"]},
                     "estimated_minutes": {"type": ["integer", "null"]},
+                    "estimate_is_guess": {"type": "boolean"},
+                    "estimate_reason": {"type": ["string", "null"]},
                     "needs_confirmation": {"type": "boolean"},
                     "note": {"type": ["string", "null"]},
                 },
@@ -31,6 +33,8 @@ DRAFTS_SCHEMA = {
                     "title",
                     "due_date",
                     "estimated_minutes",
+                    "estimate_is_guess",
+                    "estimate_reason",
                     "needs_confirmation",
                     "note",
                 ],
@@ -47,6 +51,9 @@ class Draft(BaseModel):
     title: Title
     due_date: date | None = None
     estimated_minutes: int | None = None
+    # True when the AI worked the duration out itself; the reason is shown so it can be judged.
+    estimate_is_guess: bool = False
+    estimate_reason: str | None = Field(default=None, max_length=300)
     needs_confirmation: bool = False
     note: str | None = Field(default=None, max_length=300)
 
@@ -77,6 +84,10 @@ def parse_brain_dump(llm: LLMClient, text: str, today: date, locale: Locale) -> 
         # Keep the estimate inside the task limits (5-720) instead of failing the whole result.
         if draft.estimated_minutes is not None:
             draft.estimated_minutes = min(max(draft.estimated_minutes, 5), 720)
+        else:
+            # Nothing to explain when there is no estimate.
+            draft.estimate_is_guess = False
+            draft.estimate_reason = None
         # A date in the past is almost always a misread ("Monday" resolved backwards).
         if draft.due_date is not None and draft.due_date < today:
             draft.needs_confirmation = True

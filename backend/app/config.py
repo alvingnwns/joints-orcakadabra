@@ -4,8 +4,11 @@ from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Fixed daily capacity until users can set their own (A14, OPT6).
+# The default daily capacity; each workspace can choose its own (Workspace.daily_capacity_minutes).
 DAILY_CAPACITY_MINUTES = 240
+CAPACITY_MIN_MINUTES = 30
+CAPACITY_MAX_MINUTES = 720
+CAPACITY_STEP_MINUTES = 15
 
 
 class Settings(BaseSettings):
