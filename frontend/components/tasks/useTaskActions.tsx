@@ -29,18 +29,24 @@ export function useTaskActions(refresh: () => Promise<void>) {
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [failed, setFailed] = useState(false);
 
-  async function run(action: () => Promise<unknown>, next: ToastMessage | null) {
+  async function run(
+    action: () => Promise<unknown>,
+    next: ToastMessage | null,
+    reportFailure = true,
+  ): Promise<boolean> {
     setFailed(false);
     setToast(null);
     try {
       await action();
     } catch {
-      setFailed(true);
-      return;
+      // Edits show their own error inside the dialog, so they don't also raise this one.
+      if (reportFailure) setFailed(true);
+      return false;
     }
     setToast(next);
     await refresh();
     keepFocus();
+    return true;
   }
 
   /**
@@ -63,15 +69,17 @@ export function useTaskActions(refresh: () => Promise<void>) {
     const created = await createTask(workspaceId, {
       title: task.title,
       impact_score: task.impact_score,
+      ...(task.description && { description: task.description }),
       ...(task.due_date && { due_date: task.due_date }),
       ...(task.estimated_minutes && { estimated_minutes: task.estimated_minutes }),
     });
     if (task.status !== "todo") await updateTask(workspaceId, created.id, { status: task.status });
   }
 
+  // The values to put back on undo. A field the task never had goes back to null (cleared).
   function previousValues(task: Task, changes: TaskChanges): TaskChanges {
     const keys = Object.keys(changes) as (keyof TaskChanges)[];
-    return Object.fromEntries(keys.map((key) => [key, task[key]])) as TaskChanges;
+    return Object.fromEntries(keys.map((key) => [key, task[key] ?? null])) as TaskChanges;
   }
 
   const handlers = {
@@ -99,6 +107,16 @@ export function useTaskActions(refresh: () => Promise<void>) {
         message,
         undo: () => updateTask(workspaceId, task.id, previousValues(task, changes)),
       }),
+    /** Saves an edit. Resolves to false when it fails, so the edit dialog can stay open. */
+    onEdit: (task: Task, changes: TaskChanges) =>
+      run(
+        () => updateTask(workspaceId, task.id, changes),
+        {
+          message: "editedNotice",
+          undo: () => updateTask(workspaceId, task.id, previousValues(task, changes)),
+        },
+        false,
+      ),
   };
 
   const feedback = {

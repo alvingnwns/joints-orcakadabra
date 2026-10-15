@@ -5,6 +5,7 @@ export type TaskStatus = "todo" | "in_progress" | "done" | "deferred";
 export type Task = {
   id: string;
   title: string;
+  description?: string | null;
   due_date: string | null; // "YYYY-MM-DD"
   estimated_minutes: number | null;
   impact_score: number;
@@ -14,18 +15,30 @@ export type Task = {
 
 export type NewTask = {
   title: string;
+  description?: string;
   due_date?: string;
   estimated_minutes?: number;
   impact_score: number;
 };
 
-export type TaskChanges = Partial<Pick<Task, "title" | "due_date" | "estimated_minutes" | "status">>;
+export type TaskChanges = Partial<
+  Pick<Task, "title" | "description" | "due_date" | "estimated_minutes" | "impact_score" | "status">
+>;
 
 /** The user's local calendar date as "YYYY-MM-DD" (Q1), shifted by `offsetDays`. */
 export function localDate(offsetDays = 0, now = new Date()): string {
   const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offsetDays);
   const pad = (value: number) => String(value).padStart(2, "0");
   return `${day.getFullYear()}-${pad(day.getMonth() + 1)}-${pad(day.getDate())}`;
+}
+
+/** Whole days from `from` to `to` (negative when `to` is earlier). Both are "YYYY-MM-DD". */
+export function daysBetween(from: string, to: string): number {
+  const utc = (value: string) => {
+    const [year, month, day] = value.split("-").map(Number);
+    return Date.UTC(year, month - 1, day);
+  };
+  return Math.round((utc(to) - utc(from)) / 86_400_000);
 }
 
 const workspaceHeader = (workspaceId: string) => ({ "X-Workspace-Id": workspaceId });

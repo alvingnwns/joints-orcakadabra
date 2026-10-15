@@ -43,6 +43,7 @@ describe("QuickAddForm", () => {
 
     await userEvent.type(titleInput(), "Finish proposal");
     await userEvent.click(screen.getByText("More details"));
+    await userEvent.type(screen.getByLabelText("Notes (optional)"), "  Use the new template ");
     await userEvent.type(screen.getByLabelText("Due date (optional)"), "2026-10-16");
     await userEvent.type(screen.getByLabelText("Time needed, in minutes (optional)"), "90");
     await userEvent.click(screen.getByLabelText("Really matters"));
@@ -51,6 +52,7 @@ describe("QuickAddForm", () => {
     expect(onAdd).toHaveBeenCalledWith({
       title: "Finish proposal",
       impact_score: 5,
+      description: "Use the new template",
       due_date: "2026-10-16",
       estimated_minutes: 90,
     });

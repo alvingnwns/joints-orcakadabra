@@ -4,18 +4,12 @@ import { Plus } from "lucide-react";
 import { type FormEvent, useRef, useState } from "react";
 
 import { useT } from "@/components/LocaleProvider";
+import { ImpactPicker } from "@/components/tasks/ImpactPicker";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Field, Input } from "@/components/ui/Field";
+import { Field, Input, Textarea } from "@/components/ui/Field";
 import { Notice } from "@/components/ui/Notice";
 import type { NewTask } from "@/lib/tasks";
-
-// Three friendly choices stored as impact_score 1 / 3 / 5 (A7). "Matters" is the default.
-const IMPACT_CHOICES = [
-  { value: 1, label: "impactSmall" },
-  { value: 3, label: "impactMatters" },
-  { value: 5, label: "impactReally" },
-] as const;
 
 type Props = {
   /** Should reject if the task could not be saved, so the form can keep what was typed. */
@@ -26,6 +20,7 @@ export function QuickAddForm({ onAdd }: Props) {
   const t = useT();
   const titleRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [minutes, setMinutes] = useState("");
   const [impact, setImpact] = useState(3);
@@ -43,10 +38,12 @@ export function QuickAddForm({ onAdd }: Props) {
       await onAdd({
         title: trimmed,
         impact_score: impact,
+        ...(description.trim() && { description: description.trim() }),
         ...(dueDate && { due_date: dueDate }),
         ...(minutes && { estimated_minutes: Number(minutes) }),
       });
       setTitle("");
+      setDescription("");
       setDueDate("");
       setMinutes("");
       setImpact(3);
@@ -82,6 +79,16 @@ export function QuickAddForm({ onAdd }: Props) {
             {t("moreDetails")}
           </summary>
           <div className="mt-2 grid gap-4 sm:grid-cols-2">
+            <Field label={t("descriptionLabel")} className="sm:col-span-2">
+              {(control) => (
+                <Textarea
+                  {...control}
+                  rows={2}
+                  value={description}
+                  onChange={(event) => setDescription(event.target.value)}
+                />
+              )}
+            </Field>
             <Field label={t("dueDateLabel")}>
               {(control) => (
                 <Input
@@ -106,26 +113,9 @@ export function QuickAddForm({ onAdd }: Props) {
                 />
               )}
             </Field>
-            <fieldset className="sm:col-span-2">
-              <legend className="text-sm font-medium">{t("impactLegend")}</legend>
-              <div className="mt-1 flex flex-wrap gap-2">
-                {IMPACT_CHOICES.map((choice) => (
-                  <label
-                    key={choice.value}
-                    className="flex min-h-11 cursor-pointer items-center gap-2 rounded-control border border-border-strong bg-surface px-4 has-[:checked]:border-primary has-[:checked]:bg-primary-soft"
-                  >
-                    <input
-                      type="radio"
-                      name="impact"
-                      className="accent-primary"
-                      checked={impact === choice.value}
-                      onChange={() => setImpact(choice.value)}
-                    />
-                    {t(choice.label)}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
+            <div className="sm:col-span-2">
+              <ImpactPicker value={impact} onChange={setImpact} />
+            </div>
           </div>
         </details>
 

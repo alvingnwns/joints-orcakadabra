@@ -15,9 +15,18 @@ const task: Task = {
   status: "todo",
 };
 
-async function openMenu() {
-  await userEvent.click(screen.getByRole("button", { name: "Change plans" }));
+function renderActions(item: Task = task) {
+  const handlers = {
+    onUpdate: vi.fn(),
+    onEdit: vi.fn().mockResolvedValue(true),
+    onDelete: vi.fn(),
+  };
+  render(<TaskActions task={item} {...handlers} />);
+  return handlers;
 }
+
+const more = () => screen.getByRole("button", { name: "More" });
+const openMenu = () => userEvent.click(more());
 
 describe("localDate", () => {
   it("uses the local calendar day and rolls over months", () => {
@@ -29,30 +38,47 @@ describe("localDate", () => {
 
 describe("TaskActions", () => {
   it("opens and closes the menu, with aria-expanded", async () => {
-    render(<TaskActions task={task} onUpdate={vi.fn()} />);
-    const trigger = screen.getByRole("button", { name: "Change plans" });
+    renderActions();
 
-    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(more()).toHaveAttribute("aria-expanded", "false");
     await openMenu();
-    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(more()).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("button", { name: "Move to tomorrow" })).toBeInTheDocument();
+
+    await openMenu();
+    expect(more()).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("button", { name: "Edit details" })).not.toBeInTheDocument();
   });
 
-  it("moves to tomorrow and returns focus to the trigger", async () => {
-    const onUpdate = vi.fn();
-    render(<TaskActions task={task} onUpdate={onUpdate} />);
+  it("offers edit, move, later and delete for an active task", async () => {
+    renderActions();
+
+    await openMenu();
+
+    for (const name of [
+      "Edit details",
+      "Move to tomorrow",
+      "Pick another day",
+      "Not today, save for later",
+      "Delete",
+    ]) {
+      expect(screen.getByRole("button", { name })).toBeInTheDocument();
+    }
+  });
+
+  it("moves to tomorrow and returns focus to the menu button", async () => {
+    const { onUpdate } = renderActions();
 
     await openMenu();
     await userEvent.click(screen.getByRole("button", { name: "Move to tomorrow" }));
 
     expect(onUpdate).toHaveBeenCalledWith(task, { due_date: localDate(1) }, "movedTomorrow");
-    expect(screen.getByRole("button", { name: "Change plans" })).toHaveFocus();
+    expect(more()).toHaveFocus();
     expect(screen.queryByRole("button", { name: "Move to tomorrow" })).not.toBeInTheDocument();
   });
 
   it("picks another day", async () => {
-    const onUpdate = vi.fn();
-    render(<TaskActions task={task} onUpdate={onUpdate} />);
+    const { onUpdate } = renderActions();
 
     await openMenu();
     await userEvent.click(screen.getByRole("button", { name: "Pick another day" }));
@@ -68,8 +94,7 @@ describe("TaskActions", () => {
   });
 
   it("saves for later", async () => {
-    const onUpdate = vi.fn();
-    render(<TaskActions task={task} onUpdate={onUpdate} />);
+    const { onUpdate } = renderActions();
 
     await openMenu();
     await userEvent.click(screen.getByRole("button", { name: "Not today, save for later" }));
@@ -77,57 +102,70 @@ describe("TaskActions", () => {
     expect(onUpdate).toHaveBeenCalledWith(task, { status: "deferred" }, "movedLater");
   });
 
-  it("makes a task smaller, and can clear the estimate", async () => {
-    const onUpdate = vi.fn();
-    render(<TaskActions task={task} onUpdate={onUpdate} />);
-
-    await openMenu();
-    await userEvent.click(screen.getByRole("button", { name: "Make it smaller" }));
-    const title = screen.getByLabelText("A smaller version of this task");
-    expect(title).toHaveValue("Write the whole report");
-
-    await userEvent.clear(title);
-    await userEvent.type(title, "  Write the intro ");
-    await userEvent.clear(screen.getByLabelText(/Time needed/));
-    await userEvent.click(screen.getByRole("button", { name: "Save" }));
-
-    expect(onUpdate).toHaveBeenCalledWith(
-      task,
-      { title: "Write the intro", estimated_minutes: null },
-      "madeSmaller",
-    );
-  });
-
-  it("does not save an empty smaller title, and Cancel goes back to the menu", async () => {
-    const onUpdate = vi.fn();
-    render(<TaskActions task={task} onUpdate={onUpdate} />);
-
-    await openMenu();
-    await userEvent.click(screen.getByRole("button", { name: "Make it smaller" }));
-    await userEvent.clear(screen.getByLabelText("A smaller version of this task"));
-
-    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
-    await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
-    expect(screen.getByRole("button", { name: "Make it smaller" })).toBeInTheDocument();
-    expect(onUpdate).not.toHaveBeenCalled();
-  });
-
-  it("offers only 'Bring back' for a task saved for later", async () => {
-    const onUpdate = vi.fn();
+  it("keeps 'Bring back' in sight for a task saved for later, without move options", async () => {
     const deferred = { ...task, status: "deferred" as const };
-    render(<TaskActions task={deferred} onUpdate={onUpdate} />);
+    const { onUpdate } = renderActions(deferred);
 
-    expect(screen.queryByRole("button", { name: "Change plans" })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Bring back" }));
-
     expect(onUpdate).toHaveBeenCalledWith(deferred, { status: "todo" }, "broughtBack");
+
+    await openMenu();
+    expect(screen.getByRole("button", { name: "Edit details" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Delete" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Move to tomorrow" })).not.toBeInTheDocument();
   });
 
-  it("shows nothing for a done task", () => {
-    const { container } = render(
-      <TaskActions task={{ ...task, status: "done" }} onUpdate={vi.fn()} />,
-    );
+  it("lets a done task be edited or deleted, but not moved", async () => {
+    renderActions({ ...task, status: "done" });
 
-    expect(container).toBeEmptyDOMElement();
+    expect(screen.queryByRole("button", { name: "Bring back" })).not.toBeInTheDocument();
+    await openMenu();
+
+    expect(screen.getByRole("button", { name: "Edit details" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Delete" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Move to tomorrow" })).not.toBeInTheDocument();
+  });
+
+  it("opens the edit dialog, and cancelling without changes closes it and returns focus", async () => {
+    const { onEdit } = renderActions();
+
+    await openMenu();
+    await userEvent.click(screen.getByRole("button", { name: "Edit details" }));
+    expect(screen.getByRole("dialog", { name: "Edit task" })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Edit details" })).toHaveFocus();
+    expect(onEdit).not.toHaveBeenCalled();
+  });
+
+  it("names the task before deleting, and 'Keep it' cancels", async () => {
+    const { onDelete } = renderActions();
+
+    await openMenu();
+    await userEvent.click(screen.getByRole("button", { name: "Delete" }));
+
+    const dialog = screen.getByRole("dialog", { name: "Delete this task?" });
+    expect(dialog).toHaveTextContent("“Write the whole report” will be removed");
+    expect(screen.getByRole("button", { name: "Keep it" })).toHaveFocus();
+    expect(onDelete).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole("button", { name: "Keep it" }));
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(onDelete).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Delete" })).toHaveFocus();
+  });
+
+  it("deletes only after confirming", async () => {
+    const { onDelete } = renderActions();
+
+    await openMenu();
+    await userEvent.click(screen.getByRole("button", { name: "Delete" }));
+    await userEvent.click(screen.getByRole("button", { name: "Yes, delete" }));
+
+    expect(onDelete).toHaveBeenCalledWith(task);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });

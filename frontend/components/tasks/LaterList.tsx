@@ -7,7 +7,7 @@ import { Icon } from "@/components/ui/Icon";
 import type { TranslationKey } from "@/lib/i18n/en";
 import type { Task } from "@/lib/tasks";
 
-import type { UpdateTask } from "./TaskActions";
+import type { EditTask, UpdateTask } from "./TaskActions";
 import { TaskItem } from "./TaskItem";
 
 type Props = {
@@ -15,6 +15,7 @@ type Props = {
   onToggle: (task: Task) => void;
   onDelete: (task: Task) => void;
   onUpdate: UpdateTask;
+  onEdit: EditTask;
   /** Also used for the collapsed "Done today" list. */
   titleKey?: TranslationKey;
 };

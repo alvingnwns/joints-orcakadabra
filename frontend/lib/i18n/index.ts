@@ -24,6 +24,13 @@ export function detectLocale(browserLanguage: string | undefined): Locale {
   return browserLanguage?.toLowerCase().startsWith("id") ? "id" : DEFAULT_LOCALE;
 }
 
+/** Fills `{name}` placeholders in a dictionary string: fill("Due in {n} days", { n: 3 }). */
+export function fill(template: string, values: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (match, name: string) =>
+    name in values ? String(values[name]) : match,
+  );
+}
+
 /** Formats "YYYY-MM-DD" (or a Date) for display, e.g. "Fri, 16 Oct" / "Jum, 16 Okt". */
 export function formatDate(value: string | Date, locale: Locale): string {
   let date: Date;

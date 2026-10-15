@@ -83,6 +83,7 @@ function TodayContent({ data, handlers }: { data: TodayData; handlers: Handlers 
         <HeavyLoadNotice
           load={heavy_load}
           suggestion={suggested}
+          reason={delay_suggestion?.reason}
           onMove={(task) => handlers.onUpdate(task, { due_date: localDate(1) }, "movedTomorrow")}
         />
       )}

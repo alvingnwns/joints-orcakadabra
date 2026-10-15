@@ -3,7 +3,6 @@
 import { Info } from "lucide-react";
 import { useState } from "react";
 
-import { Illustration } from "@/components/illustrations/Illustration";
 import { useT } from "@/components/LocaleProvider";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
@@ -22,7 +21,6 @@ export function AboutDialog() {
         {t("aboutButton")}
       </Button>
       <Dialog open={open} onClose={() => setOpen(false)} labelledBy="about-title">
-        <Illustration name="welcome" width={180} className="mb-4" />
         <h2 id="about-title" className="text-section font-semibold">
           {t("aboutTitle")}
         </h2>

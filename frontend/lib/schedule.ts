@@ -15,12 +15,14 @@ export type HeavyLoad = {
   capacity_minutes: number;
 };
 
+export type DelaySuggestion = { task_id: string; reason: "past_its_date" | "lowest_priority" };
+
 export type TodaySchedule = {
   today: string;
   top: ScheduledTask[];
   rest: ScheduledTask[];
   heavy_load: HeavyLoad | null;
-  delay_suggestion: { task_id: string; reason: "past_its_date" | "lowest_priority" } | null;
+  delay_suggestion: DelaySuggestion | null;
 };
 
 export type DayLoad = {

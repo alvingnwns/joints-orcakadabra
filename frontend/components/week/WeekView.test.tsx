@@ -125,7 +125,7 @@ describe("WeekView", () => {
     const section = (await screen.findByRole("heading", { name: "No date yet (1)" }))
       .parentElement!;
     expect(within(section).getByLabelText(/Someday idea/)).toBeInTheDocument();
-    expect(within(section).getByRole("button", { name: "Change plans" })).toBeInTheDocument();
+    expect(within(section).getByRole("button", { name: "More" })).toBeInTheDocument();
   });
 
   it("reloads the week after an action", async () => {
@@ -134,7 +134,7 @@ describe("WeekView", () => {
     fakeBackend([before, after]);
     renderView();
 
-    await userEvent.click(await screen.findByRole("button", { name: "Change plans" }));
+    await userEvent.click(await screen.findByRole("button", { name: "More" }));
     await userEvent.click(screen.getByRole("button", { name: "Move to tomorrow" }));
 
     expect(await screen.findByText(/Moved to tomorrow/)).toBeInTheDocument();

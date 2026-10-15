@@ -153,6 +153,7 @@ describe("TodayView", () => {
     renderView();
 
     await userEvent.click(await screen.findByRole("button", { name: "Move it" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Yes, move it" }));
     await userEvent.click(await screen.findByRole("button", { name: "Undo" }));
 
     await screen.findByText("Changed back.");
@@ -162,11 +163,17 @@ describe("TodayView", () => {
 
   it("undoes a delete by recreating the task with the same details", async () => {
     const fetchMock = fakeBackend([
-      task("a", "Report", { due_date: "2026-10-20", estimated_minutes: 90, impact_score: 5 }),
+      task("a", "Report", {
+        description: "Quarterly numbers",
+        due_date: "2026-10-20",
+        estimated_minutes: 90,
+        impact_score: 5,
+      }),
     ]);
     renderView();
 
-    await userEvent.click(await screen.findByRole("button", { name: "Delete" }));
+    await userEvent.click(await screen.findByRole("button", { name: "More" }));
+    await userEvent.click(screen.getByRole("button", { name: "Delete" }));
     await userEvent.click(screen.getByRole("button", { name: "Yes, delete" }));
     expect(await screen.findByText("Task deleted.")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Undo" }));
@@ -178,6 +185,7 @@ describe("TodayView", () => {
     expect(JSON.parse(post[1]!.body as string)).toEqual({
       title: "Report",
       impact_score: 5,
+      description: "Quarterly numbers",
       due_date: "2026-10-20",
       estimated_minutes: 90,
     });
@@ -187,7 +195,7 @@ describe("TodayView", () => {
     fakeBackend([task("a", "Open")]);
     renderView();
 
-    await userEvent.click(await screen.findByRole("button", { name: "Change plans" }));
+    await userEvent.click(await screen.findByRole("button", { name: "More" }));
     await userEvent.click(screen.getByRole("button", { name: "Not today, save for later" }));
 
     // The task left "Start here" (its buttons are gone), so focus moves to the toast.
@@ -212,7 +220,7 @@ describe("TodayView", () => {
     expect(shownIllustrations(document.body)).toEqual(["day-clear"]);
   });
 
-  it("shows the heavy-load notice with a suggestion, and 'Move it' moves it to tomorrow", async () => {
+  it("shows the heavy-load notice with the numbers, and only moves after a yes", async () => {
     const fetchMock = fakeBackend([task("a", "Big"), task("b", "Small deal")], {
       heavy,
       suggest: "b",
@@ -221,14 +229,69 @@ describe("TodayView", () => {
 
     const notice = (await screen.findByRole("heading", { name: "A full day" })).parentElement!;
     expect(notice).toHaveTextContent("Small deal");
-    expect(shownIllustrations(document.body)).toEqual(["heavy-load"]);
+    expect(notice).toHaveTextContent("About 300 minutes planned, for a 240-minute day.");
+    expect(notice).toHaveTextContent("It ranks lowest among today's tasks.");
 
     await userEvent.click(screen.getByRole("button", { name: "Move it" }));
+    expect(fetchMock.mock.calls.some(([, init]) => init?.method === "PATCH")).toBe(false);
+
+    await userEvent.click(screen.getByRole("button", { name: "Yes, move it" }));
 
     expect(await screen.findByText(/Moved to tomorrow/)).toBeInTheDocument();
     const patch = fetchMock.mock.calls.find(([, init]) => init?.method === "PATCH")!;
     expect(patch[0]).toContain("/tasks/b");
     expect(JSON.parse(patch[1]!.body as string)).toEqual({ due_date: localDate(1) });
+  });
+
+  it("says when a top pick is not due today", async () => {
+    fakeBackend([
+      task("a", "Due now", { due_date: localDate(0) }),
+      task("b", "Whenever", { due_date: null }),
+    ]);
+    renderView();
+
+    const cards = await screen.findAllByRole("listitem");
+    expect(cards[0]).not.toHaveTextContent("Not due today");
+    expect(cards[1]).toHaveTextContent("Not due today, but it ranks high");
+  });
+
+  it("edits a task from the More menu, shows the result and offers Undo", async () => {
+    const fetchMock = fakeBackend([task("a", "Report", { description: "Old notes" })]);
+    renderView();
+
+    await userEvent.click(await screen.findByRole("button", { name: "More" }));
+    await userEvent.click(screen.getByRole("button", { name: "Edit details" }));
+    const title = screen.getByLabelText("Task");
+    await userEvent.clear(title);
+    await userEvent.type(title, "Report v2");
+    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await screen.findByText("Task updated.")).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(await screen.findByLabelText(/Report v2/)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Undo" }));
+    await screen.findByText("Changed back.");
+    const patches = fetchMock.mock.calls.filter(([, init]) => init?.method === "PATCH");
+    expect(patches.map(([, init]) => JSON.parse(init!.body as string))).toEqual([
+      { title: "Report v2" },
+      { title: "Report" },
+    ]);
+  });
+
+  it("keeps the edit dialog open with the form intact when saving fails", async () => {
+    fakeBackend([task("a", "Report")], { failPatch: true });
+    renderView();
+
+    await userEvent.click(await screen.findByRole("button", { name: "More" }));
+    await userEvent.click(screen.getByRole("button", { name: "Edit details" }));
+    await userEvent.type(screen.getByLabelText("Task"), " v2");
+    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await screen.findByText(/couldn't save your changes/)).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Edit task" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Task")).toHaveValue("Report v2");
+    expect(screen.queryByText("Task updated.")).not.toBeInTheDocument();
   });
 
   it("lists tasks saved for later in the Later list", async () => {

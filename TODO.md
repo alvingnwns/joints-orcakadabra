@@ -166,15 +166,26 @@ Notes:
 - The language switcher is unchanged and its persistence test still passes.
 - Not verified in a real browser: the bottom bar, safe-area spacing and chat/toast stacking were checked through generated CSS and server output only.
 
-### CP-U3: Today and task interactions
-- [ ] One reusable `TaskCard` for Today, Week and the library: title, description (clamped), due date, estimate, importance, priority badge, completion control, one "More" menu (Edit, Move to tomorrow, Pick a day, Later, Delete).
-- [ ] `EditTaskDialog`: title, description, due date with "No date", estimate, importance. Validation matches the backend (title 1 to 200, estimate 5 to 720 in steps of 5). Cancel, discard warning, save state, error keeps the form.
-- [ ] Extend `Task`, `NewTask`, `TaskChanges` types with `description` and `impact_score`. QuickAdd gets an optional "More details" with the same fields.
-- [ ] Priority explanation: short localized line per card from structured fields; explicit note when a top-3 task is not due today.
-- [ ] Heavy-load notice: show "about X of 240 minutes", name the suggested task and why (`delay_suggestion.reason`), and a review step ("Move 'Task' to Fri 16 Oct?" with Apply and Cancel).
-- [ ] Delete: confirmation dialog naming the task; undo copy that matches what undo really does; `restore()` carries `description`.
-- [ ] Empty, loading, error states for every section.
-- [ ] Tests: edit dialog (validation, cancel, discard, server error), heavy-load review flow, undo, card menu keyboard use.
+### CP-U3: Today and task interactions (done, waiting for your review)
+- [x] The existing task card (`TaskItem`, shared by Today, Week and the Later list) now shows: title, due date, estimate, notes (two lines), the backend's priority label as a badge (Focus / Soon / Whenever), and a plain-language reason line. One "More" menu replaces "Change plans" and the always-visible Delete button: Edit details, Move to tomorrow, Pick another day, Not today (save for later), Delete. Saved-for-later tasks keep a visible "Bring back" plus a menu with Edit and Delete only; done tasks get Edit and Delete.
+- [x] `EditTaskDialog`: title, notes, due date (with "Remove date"), time needed, importance. Messages for an empty title and for a time outside 5 to 720. Only changed fields are sent. Cancelling with unsaved changes asks first (Keep editing / Discard changes). While saving, the buttons are disabled and Esc/backdrop are ignored. A failed save keeps the dialog and every value, with a calm error. Saving shows "Task updated." with Undo.
+- [x] Types: `Task`, `NewTask`, `TaskChanges` now include `description` and `impact_score`. Quick add has an optional Notes field under "More details", and both quick add and the edit dialog share one importance picker.
+- [x] Reasons come from the same fields the backend ranks on (due date, importance, length) and are translated; nothing is scored in the frontend. A top pick that is not due today (later date or no date) says so on its card.
+- [x] Heavy-load notice: shows "About 300 minutes planned, for a 240-minute day.", names the suggested task and why (past its date / ranks lowest), and "Move it" now opens a review ("Move “Task” to tomorrow (Fri, 16 Oct)?" with Yes, move it / Cancel). Nothing moves until the person agrees; the move then shows the usual message with Undo.
+- [x] Delete: a dialog that names the task and focuses "Keep it" first. Undo re-creates the task including its notes.
+- [x] Empty, loading and error states for Today were already in place and are unchanged (their tests still pass).
+- [x] Tests: 199 pass (151 before). New or rewritten: edit dialog (13), card menu and dialogs, task card badge/reasons/notes, heavy-load review, Today edit/undo/failure/"not due today", reasons and date helpers, `fill`, and a check that Indonesian uses the same `{placeholders}` as English.
+
+Where I deviated from the plan, and why:
+- "Make it smaller" (a separate inline form for title and time) is gone. Edit details covers exactly those two fields, so keeping both would duplicate it. The strings for it were removed from both languages.
+- The plan said the card would be a new `TaskCard`. I kept the name `TaskItem` and extended it, since Today, Week and the Later list already share it (less churn).
+- "Pick another day" stays as a small inline form in the menu, not a dialog.
+- Per the earlier decision to keep only empty and error illustrations: the About dialog's welcome picture (missed in CP-U2) and the heavy-load notice's picture are removed. `welcome.svg`, `heavy-load.svg` and `connection-error.svg` are now unused files.
+
+Known limits:
+- Undo after Delete re-creates the task: same title, notes, date, estimate and importance, but a new id and creation time, and a done task's completion time becomes "now".
+- Each card builds its Edit/Delete dialogs only when opened, so a long list stays light.
+- Not checked in a real browser (layout of the menu, dialogs, long titles).
 
 ### CP-U4: Week and All tasks
 - [ ] Week: day buttons with date, task count, "90 of 240 minutes" text and bar, heavy state with text. Layout for 320 to 1440 px. "Add task" for the selected day (date pre-filled). Edit through `TaskCard`.

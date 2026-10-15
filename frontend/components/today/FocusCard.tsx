@@ -4,11 +4,12 @@ import { CircleQuestionMark } from "lucide-react";
 
 import { useAskChat } from "@/components/chat/ChatPanel";
 import { useT } from "@/components/LocaleProvider";
-import { type UpdateTask } from "@/components/tasks/TaskActions";
+import { type EditTask, type UpdateTask } from "@/components/tasks/TaskActions";
 import { TaskItem } from "@/components/tasks/TaskItem";
 import { Button } from "@/components/ui/Button";
+import { isNotDueToday } from "@/lib/explain";
 import type { ScheduledTask } from "@/lib/schedule";
-import type { Task } from "@/lib/tasks";
+import { type Task, localDate } from "@/lib/tasks";
 
 type Props = {
   task: ScheduledTask;
@@ -16,15 +17,22 @@ type Props = {
   onToggle: (task: Task) => void;
   onDelete: (task: Task) => void;
   onUpdate: UpdateTask;
+  onEdit: EditTask;
 };
 
-/** One of the top 3 "Start here" tasks, with "Why is this here?" opening the chat for it. */
+/**
+ * One of the top 3 "Start here" tasks. A pick that is not due today says so, instead of leaving
+ * it to look like a mistake. "Why is this here?" opens the chat for this task.
+ */
 export function FocusCard({ first, ...props }: Props) {
   const t = useT();
   const askChat = useAskChat();
 
   return (
     <TaskItem {...props} emphasis={first}>
+      {isNotDueToday(props.task, localDate(0)) && (
+        <p className="mt-3 text-sm text-text-secondary">{t("notDueTodayNote")}</p>
+      )}
       <Button
         variant="quiet"
         icon={CircleQuestionMark}
