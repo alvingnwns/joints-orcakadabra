@@ -1,8 +1,8 @@
 import type { Dictionary } from "./en";
 
 export const id: Dictionary = {
-  appName: "Orca",
-  tagline: "Satu langkah kecil pada satu waktu",
+  appName: "PikoPlan",
+  tagline: "Harimu, caramu",
   skipToMain: "Langsung ke konten utama",
   languageLabel: "Bahasa",
   connecting: "Menghubungkan…",
@@ -14,7 +14,7 @@ export const id: Dictionary = {
   settingsButton: "Pengaturan",
   aboutTitle: "Tentang aplikasi ini",
   aboutBody:
-    "Orca membantumu melihat satu langkah berikutnya dengan jelas. Memindahkan, mengecilkan, atau melewati tugas selalu boleh.",
+    "PikoPlan membantumu melihat satu langkah berikutnya dengan jelas. Memindahkan, mengecilkan, atau melewati tugas selalu boleh.",
   aboutPrivacy:
     "Fitur AI mengirim teks yang kamu ketik ke penyedia AI pihak ketiga, jadi hindari memasukkan data pribadi yang sensitif.",
   close: "Tutup",
@@ -224,4 +224,27 @@ export const id: Dictionary = {
   aiEstimate: "Perkiraan AI",
   themeToggle: "Mode gelap",
   dumpAnother: "Tambah curah pikiran lagi",
+  syncTitle: "Pakai di perangkat lain",
+  syncHint: "Tugasmu tersimpan di peramban ini. Untuk melihatnya di tempat lain, buka tautan ini di sana, atau masukkan kodenya.",
+  syncCodeLabel: "Kode ruang kerjamu",
+  syncCopyLink: "Salin tautan",
+  syncCopyCode: "Salin kode",
+  syncCopiedLink: "Tautan disalin.",
+  syncCopiedCode: "Kode disalin.",
+  syncCopyFailed: "Tidak bisa menyalin otomatis. Pilih kode di atas lalu salin secara manual.",
+  syncPrivacy: "Siapa pun yang punya kode ini bisa melihat dan mengubah tugasmu, jadi simpan untuk dirimu sendiri.",
+  syncOpenLabel: "Buka ruang kerja lain",
+  syncOpenHint: "Tempel kode atau tautan dari perangkat lain.",
+  syncOpenButton: "Buka",
+  syncInvalid: "Itu tidak terlihat seperti kode atau tautan ruang kerja.",
+  syncSame: "Itu ruang kerja yang sedang kamu pakai.",
+  syncNotFound: "Kami tidak menemukan ruang kerja dengan kode itu.",
+  syncNetworkError: "Kami tidak bisa menghubungi server. Silakan coba lagi.",
+  syncConfirmTitle: "Buka ruang kerja itu?",
+  syncConfirmBody: "Perangkat ini akan menampilkan tugas dari kode itu. Tugas yang kamu lihat sekarang tetap tersimpan dengan kode saat ini, jadi salin dulu jika kamu mungkin ingin kembali.",
+  syncConfirmYes: "Ya, buka",
+  syncConfirmNo: "Tetap pakai tugasku",
+  syncOpening: "Membuka…",
+  syncCopyCurrent: "Salin kode saat ini",
+  syncLinkTitle: "Tautan ini membuka ruang kerja lain",
 };

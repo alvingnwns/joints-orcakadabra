@@ -12,6 +12,7 @@ import { SettingsDialog } from "@/components/SettingsDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Icon } from "@/components/ui/Icon";
 import { WorkspaceGate, WorkspaceState } from "@/components/WorkspaceProvider";
+import { SharedLinkPrompt } from "@/components/WorkspaceSharing";
 import type { TranslationKey } from "@/lib/i18n/en";
 
 const NAV: { href: string; label: TranslationKey; icon: LucideIcon }[] = [
@@ -83,6 +84,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
       <ConnectionBanner />
+      <SharedLinkPrompt />
       {/* The bottom padding keeps content clear of the mobile nav and the chat button. */}
       <main
         id="main"

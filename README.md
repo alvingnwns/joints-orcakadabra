@@ -42,7 +42,7 @@ Root directory: `backend`. Python 3.12 comes from `backend/.python-version`; dep
 | Start command | Railway reads `backend/Procfile`. On Render, paste the same command: `alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT` |
 | Health check path | `/health` |
 | `DATABASE_URL` | the Supabase string from step 1 |
-| `CORS_ORIGINS` | the Vercel URL, e.g. `https://orca.vercel.app` (no trailing slash; comma-separate several) |
+| `CORS_ORIGINS` | the Vercel URL, e.g. `https://pikoplan.vercel.app` (no trailing slash; comma-separate several) |
 | `LLM_API_KEY` | your OpenRouter key (secret) |
 | `LLM_MODEL` | `nvidia/nemotron-3-super-120b-a12b:free` (or the paid `qwen/qwen3-14b`: no daily cap, no provider logging) |
 | `LLM_CHAT_MODEL` | `google/gemma-4-31b-it:free` (falls back to `LLM_MODEL` when rate-limited) |

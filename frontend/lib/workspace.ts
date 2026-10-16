@@ -22,6 +22,22 @@ function storeId(id: string) {
 
 async function ensureWorkspaceUncached(): Promise<string> {
   const stored = readStoredId();
+
+  // Opened from a "use on another device" link on a browser with no workspace yet: take it.
+  // (A browser that already has one asks first, see SharedLinkPrompt.)
+  const linked = stored ? null : readLinkCode();
+  if (linked) {
+    try {
+      const id = await adoptWorkspace(linked);
+      clearLinkCode();
+      return id;
+    } catch (error) {
+      const isStale = error instanceof ApiError && (error.status === 404 || error.status === 422);
+      if (!isStale) throw error; // server down: keep the link so a retry still works
+      clearLinkCode(); // a link to nothing: carry on with a new workspace
+    }
+  }
+
   if (stored) {
     try {
       await apiFetch<WorkspaceResponse>(`/workspaces/${encodeURIComponent(stored)}`);
@@ -40,6 +56,51 @@ async function ensureWorkspaceUncached(): Promise<string> {
 }
 
 let pending: Promise<string> | null = null;
+
+// --- sharing a workspace with another device ---
+
+const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+const LINK_PARAM = "workspace";
+
+/**
+ * Pulls a workspace code out of whatever the person pasted: the bare code, a full link, or a
+ * sentence around either. Returns null when there is no code in it.
+ */
+export function parseWorkspaceCode(input: string): string | null {
+  return UUID.exec(input)?.[0].toLowerCase() ?? null;
+}
+
+/**
+ * A link that opens this workspace on another device. The code sits after the "#", which the
+ * browser never sends to any server, so it does not end up in server logs.
+ */
+export function workspaceLink(id: string, origin: string): string {
+  return `${origin}/#${LINK_PARAM}=${id}`;
+}
+
+/** The code from an opened link (`/#workspace=<code>`), or null when the page has none. */
+export function readLinkCode(): string | null {
+  const value = new URLSearchParams(window.location.hash.slice(1)).get(LINK_PARAM);
+  return value ? parseWorkspaceCode(value) : null;
+}
+
+/** Removes the code from the address bar, so a reload or a bookmark does not repeat it. */
+export function clearLinkCode() {
+  const { pathname, search } = window.location;
+  window.history.replaceState(null, "", pathname + search);
+}
+
+/**
+ * Makes `code` this browser's workspace, after checking that it exists. Throws an ApiError
+ * (status 404 or 422 when there is no such workspace) and changes nothing if it does not.
+ */
+export async function adoptWorkspace(code: string): Promise<string> {
+  const id = parseWorkspaceCode(code);
+  if (!id) throw new ApiError("http", "Not a workspace code.", 422);
+  await apiFetch<WorkspaceResponse>(`/workspaces/${encodeURIComponent(id)}`);
+  storeId(id);
+  return id;
+}
 
 /** The workspace's own settings. (The server also returns the id and the creation time.) */
 export type WorkspaceSettings = { daily_capacity_minutes: number };

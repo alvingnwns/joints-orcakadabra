@@ -1,7 +1,7 @@
 /** English is the source of truth: every other language must define the same keys. */
 export const en = {
-  appName: "Orca",
-  tagline: "One small step at a time",
+  appName: "PikoPlan",
+  tagline: "Your day, your way",
   skipToMain: "Skip to main content",
   languageLabel: "Language",
   connecting: "Connecting…",
@@ -13,7 +13,7 @@ export const en = {
   settingsButton: "Settings",
   aboutTitle: "About this app",
   aboutBody:
-    "Orca helps you see one clear next step. Moving, shrinking, or skipping a task is always fine.",
+    "PikoPlan helps you see one clear next step. Moving, shrinking, or skipping a task is always fine.",
   aboutPrivacy:
     "AI features send the text you type to a third-party AI provider, so please avoid entering sensitive personal details.",
   close: "Close",
@@ -223,6 +223,29 @@ export const en = {
   aiEstimate: "AI estimate",
   themeToggle: "Dark mode",
   dumpAnother: "Add another brain dump",
+  syncTitle: "Use on another device",
+  syncHint: "Your tasks are saved in this browser. To see them somewhere else, open the link there, or enter the code.",
+  syncCodeLabel: "Your workspace code",
+  syncCopyLink: "Copy link",
+  syncCopyCode: "Copy code",
+  syncCopiedLink: "Link copied.",
+  syncCopiedCode: "Code copied.",
+  syncCopyFailed: "Couldn't copy automatically. Select the code above and copy it by hand.",
+  syncPrivacy: "Anyone with this code can see and change your tasks, so keep it to yourself.",
+  syncOpenLabel: "Open another workspace",
+  syncOpenHint: "Paste a code or link from another device.",
+  syncOpenButton: "Open",
+  syncInvalid: "That doesn't look like a workspace code or link.",
+  syncSame: "That's the workspace you're already using.",
+  syncNotFound: "We couldn't find a workspace with that code.",
+  syncNetworkError: "We couldn't reach the server. Please try again.",
+  syncConfirmTitle: "Open that workspace instead?",
+  syncConfirmBody: "This device will show the tasks from that code. The tasks you see now stay saved under your current code, so copy it first if you may want them back.",
+  syncConfirmYes: "Yes, open it",
+  syncConfirmNo: "Keep my tasks",
+  syncOpening: "Opening…",
+  syncCopyCurrent: "Copy my current code",
+  syncLinkTitle: "This link opens a different workspace",
 };
 
 export type TranslationKey = keyof typeof en;

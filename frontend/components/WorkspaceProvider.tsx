@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Notice } from "@/components/ui/Notice";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { ensureWorkspace } from "@/lib/workspace";
+import { adoptWorkspace, ensureWorkspace } from "@/lib/workspace";
 
 type Status = "loading" | "error" | "ready";
 
@@ -15,6 +15,7 @@ type WorkspaceValue = {
   status: Status;
   id: string | null;
   reload: () => void;
+  switchTo: (code: string) => Promise<void>;
   settingsVersion: number;
   settingsChanged: () => void;
 };
@@ -52,6 +53,15 @@ export function useSettingsChanged(): () => void {
   return useWorkspaceValue().settingsChanged;
 }
 
+/**
+ * Switches this browser to another workspace by its code. Rejects (and changes nothing) when
+ * there is no such workspace or the server cannot be reached; on success every page reloads
+ * its data under the new workspace.
+ */
+export function useSwitchWorkspace(): (code: string) => Promise<void> {
+  return useWorkspaceValue().switchTo;
+}
+
 /** Finds or creates this browser's workspace, and shares it. Renders its children right away. */
 export function WorkspaceState({ children }: { children: ReactNode }) {
   const [state, setState] = useState<{ status: Status; id: string | null }>({
@@ -76,9 +86,17 @@ export function WorkspaceState({ children }: { children: ReactNode }) {
     void load();
   }, [load]);
 
+  const switchTo = useCallback(
+    async (code: string) => {
+      await adoptWorkspace(code); // throws first if it does not exist: nothing changes
+      await load();
+    },
+    [load],
+  );
+
   return (
     <WorkspaceContext.Provider
-      value={{ ...state, reload: () => void load(), settingsVersion, settingsChanged }}
+      value={{ ...state, reload: () => void load(), switchTo, settingsVersion, settingsChanged }}
     >
       {children}
     </WorkspaceContext.Provider>

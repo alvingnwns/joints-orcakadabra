@@ -86,6 +86,23 @@ describe("AppShell navigation", () => {
     ]);
   });
 
+  it("is called PikoPlan, with the tagline 'Your day, your way'", () => {
+    renderShell();
+
+    const header = screen.getByRole("banner");
+    expect(within(header).getByText("PikoPlan")).toBeInTheDocument();
+    expect(within(header).getByText("Your day, your way")).toBeInTheDocument();
+    expect(header).not.toHaveTextContent(/orca/i);
+  });
+
+  it("has the tagline in Indonesian too", () => {
+    localStorage.setItem("orca.locale", "id");
+
+    renderShell();
+
+    return screen.findByText("Harimu, caramu");
+  });
+
   it("puts the Dark mode button right next to Settings, in the header", () => {
     renderShell();
 

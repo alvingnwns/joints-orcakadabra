@@ -12,7 +12,7 @@ Base URL: `NEXT_PUBLIC_API_URL` (local default `http://127.0.0.1:8000`). Interac
 
 | Topic | Rule |
 |---|---|
-| Identity | No login. `POST /workspaces` returns an id, the frontend keeps it in `localStorage` (`orca.workspaceId`) and sends it as header `X-Workspace-Id` on every request except `/health` and `/workspaces*`. |
+| Identity | No login. `POST /workspaces` returns an id, the frontend keeps it in `localStorage` (`orca.workspaceId`) and sends it as header `X-Workspace-Id` on every request except `/health` and `/workspaces*`. Using the same tasks on another device is done in the frontend only (Settings → "Use on another device"): it copies a link `<site>/#workspace=<id>` or the bare id, and opening one calls `GET /workspaces/{id}` to check it exists before the browser adopts it. No backend change was needed. Anyone who has the id can open the workspace. |
 | Missing or malformed workspace header | 422. Unknown workspace id: 404. The frontend replaces a stale id on 404/422 only; on server or network errors it keeps the id. |
 | Dates | `YYYY-MM-DD`, the user's local calendar date, no timezone. The frontend sends `today` itself (`localDate()`); the backend never guesses a timezone. |
 | Isolation | A task from another workspace returns 404, same as a missing task. |

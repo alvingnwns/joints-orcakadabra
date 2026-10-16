@@ -11,6 +11,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Notice } from "@/components/ui/Notice";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useLoad } from "@/components/useLoad";
+import { WorkspaceSharing } from "@/components/WorkspaceSharing";
 import { useOptionalWorkspace, useSettingsChanged, useWorkspace } from "@/components/WorkspaceProvider";
 import { fill } from "@/lib/i18n";
 import { formatDuration } from "@/lib/load";
@@ -65,6 +66,8 @@ function SettingsBody({ titleId, onClose }: { titleId: string; onClose: () => vo
         <p className="mt-1 text-sm text-text-secondary">{t("settingsCapacityHint")}</p>
         <CapacityPicker />
       </section>
+
+      <WorkspaceSharing onSwitched={onClose} />
 
       <section aria-labelledby={`${titleId}-about`} className="border-t border-border pt-5">
         <h3 id={`${titleId}-about`} className="text-base font-bold">

@@ -11,7 +11,7 @@ import "./globals.css";
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Orca — a friendly task scheduler",
+  title: "PikoPlan — Your day, your way",
   description: "See what to do next. Postponing, simplifying, or skipping is always fine.",
 };
 
