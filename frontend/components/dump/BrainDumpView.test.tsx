@@ -72,6 +72,30 @@ async function dump(text: string) {
 }
 
 describe("BrainDumpView", () => {
+  it("says what to do: 'Dump your tasks here', with a description of how it works", async () => {
+    localStorage.clear();
+    fakeBackend([]);
+    renderView();
+
+    expect(await screen.findByRole("heading", { level: 1, name: "Dump your tasks here" })).toBeVisible();
+    expect(screen.queryByText("Just dump it here")).not.toBeInTheDocument(); // the old, vague title
+    expect(
+      screen.getByText(
+        "Write your tasks as a paragraph, or paste random messages just as they are. AI will break them down into separate tasks for you.",
+      ),
+    ).toBeVisible();
+    expect(screen.getByText("You check everything before anything is saved.")).toBeVisible();
+  });
+
+  it("says it in Indonesian too", async () => {
+    localStorage.setItem("orca.locale", "id");
+    fakeBackend([]);
+    renderView();
+
+    expect(await screen.findByRole("heading", { level: 1, name: "Tuang tugasmu di sini" })).toBeVisible();
+    expect(screen.getByText(/Tulis tugasmu dalam satu paragraf/)).toBeVisible();
+  });
+
   beforeEach(() => localStorage.clear());
   afterEach(() => vi.unstubAllGlobals());
 

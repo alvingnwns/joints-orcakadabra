@@ -72,6 +72,26 @@ describe("HeavyLoadNotice", () => {
     expect(screen.getByRole("button", { name: "Move it" })).toBeInTheDocument();
   });
 
+  it("offers to rearrange all the days when the day holds more than the person's time", () => {
+    render(<HeavyLoadNotice load={load} suggestion={suggestion} onMove={vi.fn()} />);
+
+    expect(screen.getByRole("button", { name: "Rearrange my days" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Move it" })).toBeInTheDocument(); // still there
+  });
+
+  it("does not offer it for 'several long tasks', where spreading minutes would not help", () => {
+    render(
+      <HeavyLoadNotice
+        load={{ ...load, reason: "many_long_tasks" }}
+        suggestion={suggestion}
+        onMove={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Rearrange my days" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Move it" })).toBeInTheDocument();
+  });
+
   it("uses the long-tasks wording for that reason", () => {
     render(
       <HeavyLoadNotice

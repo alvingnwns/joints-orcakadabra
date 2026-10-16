@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarCheck, CalendarDays, ListChecks, NotebookPen, type LucideIcon } from "lucide-react";
+import { CalendarCheck, CalendarDays, ListChecks, Sparkles, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -15,11 +15,12 @@ import { WorkspaceGate, WorkspaceState } from "@/components/WorkspaceProvider";
 import { SharedLinkPrompt } from "@/components/WorkspaceSharing";
 import type { TranslationKey } from "@/lib/i18n/en";
 
-const NAV: { href: string; label: TranslationKey; icon: LucideIcon }[] = [
+const NAV: { href: string; label: TranslationKey; icon: LucideIcon; featured?: boolean }[] = [
   { href: "/", label: "todayTitle", icon: CalendarCheck },
   { href: "/week", label: "navWeek", icon: CalendarDays },
   { href: "/tasks", label: "navTasks", icon: ListChecks },
-  { href: "/dump", label: "navDump", icon: NotebookPen },
+  // The star feature: a filled button, set apart at the right end of the header.
+  { href: "/dump", label: "navDump", icon: Sparkles, featured: true },
 ];
 
 /**
@@ -52,20 +53,27 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <nav
             aria-label={t("navLabel")}
-            className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_-16px_rgb(38_51_45/0.25)] lg:static lg:z-auto lg:border-0 lg:bg-transparent lg:pb-0 lg:shadow-none"
+            className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_-16px_rgb(38_51_45/0.25)] lg:static lg:z-auto lg:min-w-0 lg:flex-1 lg:border-0 lg:bg-transparent lg:pb-0 lg:shadow-none"
           >
             <ul className="mx-auto flex max-w-xl lg:max-w-none lg:gap-1">
               {NAV.map((item) => {
                 const current = pathname === item.href;
                 return (
-                  <li key={item.href} className="min-w-0 flex-1 lg:flex-none">
+                  <li
+                    key={item.href}
+                    className={`min-w-0 flex-1 lg:flex-none ${item.featured ? "lg:ml-auto" : ""}`}
+                  >
                     <Link
                       href={item.href}
                       aria-current={current ? "page" : undefined}
                       className={`m-1 flex min-h-14 flex-col items-center justify-center gap-1 rounded-control px-1 text-meta lg:m-0 lg:min-h-11 lg:flex-row lg:gap-2 lg:px-4 lg:text-base ${
-                        current
-                          ? "bg-primary-soft font-bold text-primary"
-                          : "font-medium text-text hover:bg-surface-muted"
+                        item.featured
+                          ? `bg-primary font-bold text-on-primary shadow-soft hover:bg-primary-hover lg:px-5 ${
+                              current ? "ring-2 ring-primary ring-offset-2 ring-offset-surface" : ""
+                            }`
+                          : current
+                            ? "bg-primary-soft font-bold text-primary"
+                            : "font-medium text-text hover:bg-surface-muted"
                       }`}
                     >
                       <Icon icon={item.icon} />

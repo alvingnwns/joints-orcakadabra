@@ -102,14 +102,22 @@ export function TodayView() {
           {state.status === "error" && (
             <LoadError message={t("todayLoadError")} onRetry={() => void reload()} />
           )}
-          {ready && <TodayContent data={ready} handlers={handlers} />}
+          {ready && <TodayContent data={ready} handlers={handlers} onRebalanced={refresh} />}
         </div>
       </div>
     </div>
   );
 }
 
-function TodayContent({ data, handlers }: { data: TodayData; handlers: Handlers }) {
+function TodayContent({
+  data,
+  handlers,
+  onRebalanced,
+}: {
+  data: TodayData;
+  handlers: Handlers;
+  onRebalanced: () => void;
+}) {
   const t = useT();
   const { schedule, later, doneToday } = data;
   const { top, rest, heavy_load, delay_suggestion } = schedule;
@@ -126,6 +134,7 @@ function TodayContent({ data, handlers }: { data: TodayData; handlers: Handlers 
           load={heavy_load}
           suggestion={suggested}
           reason={delay_suggestion?.reason}
+          onRebalanced={onRebalanced}
           onMove={(task) => handlers.onUpdate(task, { due_date: localDate(1) }, "movedTomorrow")}
         />
       )}

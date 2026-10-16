@@ -191,6 +191,50 @@ def test_prompt_includes_today_the_week_ahead_and_the_locale(client: TestClient,
     assert USER_TEXT in user["content"]  # the notes go in the user message, as data
 
 
+def test_prompt_tells_the_model_what_today_words_mean_in_both_languages(
+    client: TestClient, fake_llm
+):
+    fake = fake_llm({"drafts": [draft()]})
+
+    parse(client, new_workspace(client))
+
+    prompt = fake.messages[0]["content"]
+    for word in ("today", "tonight", "right now", "asap", "hari ini", "nanti malam", "sekarang"):
+        assert word in prompt
+    assert "besok" in prompt and "lusa" in prompt and "minggu depan" in prompt
+    # a heading like "Today:" covers the tasks listed under it
+    assert "applies to every task under it" in prompt
+    # "by Friday" written on a Friday is today
+    assert "means today" in prompt
+    # no date at all stays empty, rather than being guessed
+    assert "Use null only when" in prompt
+
+
+def test_the_same_weekday_a_week_ahead_is_labelled_so_it_is_not_read_as_today():
+    from app.services.prompts import _calendar
+
+    friday = date(2026, 10, 16)
+
+    text = _calendar(friday)
+
+    assert "Today is Friday 2026-10-16" in text
+    assert "next Friday 2026-10-23" in text
+    assert "Saturday 2026-10-17" in text and "next Saturday" not in text
+
+
+def test_prompt_covers_many_kinds_of_tasks_without_inventing_any(client: TestClient, fake_llm):
+    fake = fake_llm({"drafts": [draft()]})
+
+    parse(client, new_workspace(client))
+
+    prompt = fake.messages[0]["content"]
+    for kind in ("appointments", "bills", "errands", "study", "travel", "gifts", "meetings"):
+        assert kind in prompt
+    assert "Never invent tasks" in prompt
+    assert "feelings, complaints" in prompt  # background is not a task
+    assert "keep the time in the title" in prompt.lower()
+
+
 def test_parse_passes_the_ai_estimate_and_its_reason_through(client: TestClient, fake_llm):
     fake_llm(
         {

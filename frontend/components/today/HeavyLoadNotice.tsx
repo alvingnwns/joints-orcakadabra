@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { useLocale } from "@/components/LocaleProvider";
+import { RebalanceButton } from "@/components/tasks/RebalanceButton";
 import { Button } from "@/components/ui/Button";
 import { Notice } from "@/components/ui/Notice";
 import { fill, formatDate } from "@/lib/i18n";
@@ -15,15 +16,20 @@ type Props = {
   suggestion: ScheduledTask | null;
   reason?: DelaySuggestion["reason"];
   onMove: (task: ScheduledTask) => void;
+  /** Called after "Rearrange my days" changed the schedule, so the page can load again. */
+  onRebalanced?: () => void;
 };
 
 /**
  * A calm "full day" notice with one concrete idea. Moving is a suggestion until the person
  * agrees to it: "Move it" shows what would happen, and only "Yes, move it" changes anything.
+ * When the day holds more than the person's daily time, "Rearrange my days" offers to spread
+ * the whole schedule out (also only after a preview and a confirmation).
  */
-export function HeavyLoadNotice({ load, suggestion, reason, onMove }: Props) {
+export function HeavyLoadNotice({ load, suggestion, reason, onMove, onRebalanced }: Props) {
   const { t, locale } = useLocale();
   const [reviewing, setReviewing] = useState(false);
+  const overCapacity = load.reason === "over_capacity";
 
   return (
     <section aria-labelledby="heavy-load-title">
@@ -70,9 +76,15 @@ export function HeavyLoadNotice({ load, suggestion, reason, onMove }: Props) {
                   </div>
                 </div>
               ) : (
-                <Button variant="primary" onClick={() => setReviewing(true)}>
-                  {t("moveIt")}
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  {overCapacity && <RebalanceButton onDone={() => onRebalanced?.()} />}
+                  <Button
+                    variant={overCapacity ? "secondary" : "primary"}
+                    onClick={() => setReviewing(true)}
+                  >
+                    {t("moveIt")}
+                  </Button>
+                </div>
               )}
             </div>
           )

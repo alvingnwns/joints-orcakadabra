@@ -173,3 +173,38 @@ class BulkCreate(BaseModel):
     """Approved drafts, saved together: one invalid item rejects the whole request."""
 
     tasks: Annotated[list[TaskCreate], Field(min_length=1, max_length=50)]
+
+
+# --- rearranging overfull days ---
+
+
+class RebalanceRequest(BaseModel):
+    today: date  # the user's local date, like the schedule endpoints
+    apply: bool = False  # false: only show what would change
+
+
+class RebalanceMoveOut(BaseModel):
+    task_id: uuid.UUID
+    title: str
+    from_date: date
+    to_date: date
+
+
+class RebalancePartOut(BaseModel):
+    title: str
+    date: date
+    minutes: int
+
+
+class RebalanceSplitOut(BaseModel):
+    task_id: uuid.UUID
+    title: str
+    total_minutes: int
+    parts: list[RebalancePartOut]
+
+
+class RebalanceOut(BaseModel):
+    applied: bool
+    capacity_minutes: int
+    moves: list[RebalanceMoveOut]
+    splits: list[RebalanceSplitOut]

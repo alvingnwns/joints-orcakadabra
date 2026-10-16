@@ -7,6 +7,7 @@ import {
   ensureWorkspace,
   parseWorkspaceCode,
   readLinkCode,
+  readRecentWorkspaces,
   workspaceLink,
 } from "./workspace";
 
@@ -140,6 +141,17 @@ describe("workspace codes and links", () => {
       expect(await adoptWorkspace(`link: /#workspace=${A}`)).toBe(A);
 
       expect(localStorage.getItem(WORKSPACE_STORAGE_KEY)).toBe(A);
+    });
+
+    it("remembers the workspace it leaves, so the person can switch back", async () => {
+      localStorage.setItem(WORKSPACE_STORAGE_KEY, B);
+      fakeBackend([A, B]);
+
+      await adoptWorkspace(A);
+      expect(readRecentWorkspaces()).toEqual([B]);
+
+      await adoptWorkspace(B);
+      expect(readRecentWorkspaces()).toEqual([A, B]); // the Settings list hides the current one
     });
 
     it("changes nothing when there is no such workspace", async () => {

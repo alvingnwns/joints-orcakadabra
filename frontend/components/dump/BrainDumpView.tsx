@@ -93,7 +93,10 @@ export function BrainDumpView() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <h1 className="text-display font-semibold">{t("dumpTitle")}</h1>
+      <div className="space-y-2">
+        <h1 className="text-display font-semibold">{t("dumpTitle")}</h1>
+        <p className="text-text-secondary">{t("dumpIntro")}</p>
+      </div>
 
       {/* Announces progress and results to screen readers; visible while the AI is working. */}
       <p

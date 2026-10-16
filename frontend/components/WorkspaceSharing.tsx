@@ -14,8 +14,10 @@ import { copyText } from "@/lib/clipboard";
 import type { TranslationKey } from "@/lib/i18n/en";
 import {
   clearLinkCode,
+  createWorkspace,
   parseWorkspaceCode,
   readLinkCode,
+  readRecentWorkspaces,
   workspaceLink,
 } from "@/lib/workspace";
 
@@ -96,6 +98,7 @@ export function WorkspaceSharing({ onSwitched }: { onSwitched: () => void }) {
   const [pending, setPending] = useState<string | null>(null); // a code waiting for "Yes, open it"
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const recent = readRecentWorkspaces().filter((code) => code !== id);
 
   if (!id) return null; // Settings opened before the workspace is ready; the section appears after
 
@@ -107,6 +110,19 @@ export function WorkspaceSharing({ onSwitched }: { onSwitched: () => void }) {
     if (code === id) return setError(t("syncSame"));
     setError(null);
     setPending(code);
+  }
+
+  // Switching is safe without a prompt for these: the current workspace goes onto the list.
+  async function open(code: string | Promise<string>) {
+    setBusy(true);
+    try {
+      await switchTo(await code);
+      onSwitched();
+    } catch (failure) {
+      setError(isMissing(failure) ? t("syncNotFound") : t("syncNetworkError"));
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function confirm() {
@@ -177,6 +193,28 @@ export function WorkspaceSharing({ onSwitched }: { onSwitched: () => void }) {
           {t("syncOpenButton")}
         </Button>
       </form>
+
+      <div className="space-y-3 border-t border-border pt-4">
+        <Button disabled={busy} onClick={() => void open(createWorkspace())}>
+          {t("syncNewButton")}
+        </Button>
+        <p className="text-sm text-text-secondary">{t("syncNewHint")}</p>
+        {recent.length > 0 && (
+          <div className="space-y-2">
+            <h4 className="text-sm font-bold">{t("syncRecentTitle")}</h4>
+            <ul className="space-y-2">
+              {recent.map((code) => (
+                <li key={code} className="flex items-center justify-between gap-3">
+                  <span className="font-mono text-xs">…{code.slice(-8)}</span>
+                  <Button disabled={busy} onClick={() => void open(code)}>
+                    {t("syncSwitchBack")}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
 
       {pending && (
         <Notice tone="attention" title={t("syncConfirmTitle")}>

@@ -12,8 +12,28 @@ function readStoredId(): string | null {
   }
 }
 
+const RECENT_KEY = "orca.recentWorkspaces";
+const RECENT_MAX = 5;
+
+/** Workspaces this browser used before, newest first, so a switch is never one way. */
+export function readRecentWorkspaces(): string[] {
+  try {
+    const list: unknown = JSON.parse(localStorage.getItem(RECENT_KEY) ?? "[]");
+    return Array.isArray(list) ? list.filter((id): id is string => typeof id === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function rememberRecent(id: string) {
+  const rest = readRecentWorkspaces().filter((other) => other !== id);
+  localStorage.setItem(RECENT_KEY, JSON.stringify([id, ...rest].slice(0, RECENT_MAX)));
+}
+
 function storeId(id: string) {
   try {
+    const previous = localStorage.getItem(WORKSPACE_STORAGE_KEY);
+    if (previous && previous !== id) rememberRecent(previous);
     localStorage.setItem(WORKSPACE_STORAGE_KEY, id);
   } catch {
     // Not saved, so a new workspace is created next visit. Acceptable for an anonymous demo.
@@ -100,6 +120,11 @@ export async function adoptWorkspace(code: string): Promise<string> {
   await apiFetch<WorkspaceResponse>(`/workspaces/${encodeURIComponent(id)}`);
   storeId(id);
   return id;
+}
+
+/** Creates an empty workspace without switching to it (switch with `adoptWorkspace`). */
+export async function createWorkspace(): Promise<string> {
+  return (await apiFetch<WorkspaceResponse>("/workspaces", { method: "POST" })).id;
 }
 
 /** The workspace's own settings. (The server also returns the id and the creation time.) */

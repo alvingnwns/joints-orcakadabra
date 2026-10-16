@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { WorkspaceProvider } from "@/components/WorkspaceProvider";
 import { shownIllustrations } from "@/components/illustrations/testing";
+import type { RebalancePlan } from "@/lib/rebalance";
 import type { HeavyLoad } from "@/lib/schedule";
 import { type Task, localDate } from "@/lib/tasks";
 
@@ -22,7 +23,14 @@ const task = (id: string, title: string, extra: Partial<Task> = {}): Task => ({
   ...extra,
 });
 
-type Options = { heavy?: HeavyLoad; suggest?: string; failToday?: number; failPatch?: boolean };
+type Options = {
+  heavy?: HeavyLoad;
+  suggest?: string;
+  failToday?: number;
+  failPatch?: boolean;
+  /** What "Rearrange my days" would do; once applied, the day is no longer heavy. */
+  plan?: RebalancePlan;
+};
 
 /**
  * In-memory backend. /tasks/today keeps the list order (ranking itself is tested in the backend):
@@ -31,10 +39,16 @@ type Options = { heavy?: HeavyLoad; suggest?: string; failToday?: number; failPa
 function fakeBackend(initial: Task[], options: Options = {}) {
   const tasks = initial.map((item) => ({ ...item }));
   let todayFailures = options.failToday ?? 0;
+  let rearranged = false;
   const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
     const { pathname, searchParams } = new URL(url);
     const method = init?.method ?? "GET";
     if (pathname === "/workspaces") return json({ id: "ws1" }, 201);
+    if (pathname === "/tasks/rebalance") {
+      const { apply } = JSON.parse(init?.body as string);
+      if (apply) rearranged = true;
+      return json({ ...options.plan, applied: apply });
+    }
     if (pathname === "/tasks/today") {
       if (todayFailures-- > 0) throw new TypeError("Failed to fetch");
       const active = tasks.filter((item) => item.status === "todo");
@@ -42,7 +56,7 @@ function fakeBackend(initial: Task[], options: Options = {}) {
         today: searchParams.get("today"),
         top: active.slice(0, 3),
         rest: active.slice(3),
-        heavy_load: options.heavy ?? null,
+        heavy_load: rearranged ? null : (options.heavy ?? null),
         delay_suggestion: options.suggest
           ? { task_id: options.suggest, reason: "lowest_priority" }
           : null,
@@ -193,6 +207,40 @@ describe("TodayView", () => {
       { status: "done" },
       { status: "todo" },
     ]);
+  });
+
+  it("rearranges an overfull day: preview first, then the notice goes away once it fits", async () => {
+    const plan: RebalancePlan = {
+      applied: false,
+      capacity_minutes: 240,
+      moves: [{ task_id: "b", title: "Small", from_date: localDate(0), to_date: localDate(1) }],
+      splits: [],
+    };
+    const fetchMock = fakeBackend([task("a", "Big"), task("b", "Small")], {
+      heavy,
+      suggest: "b",
+      plan,
+    });
+    renderView();
+
+    await userEvent.click(await screen.findByRole("button", { name: "Rearrange my days" }));
+    expect(await screen.findByText("Moving to a day with room")).toBeInTheDocument();
+    const rebalanceCalls = () =>
+      fetchMock.mock.calls
+        .filter(([url]) => new URL(url).pathname === "/tasks/rebalance")
+        .map(([, init]) => JSON.parse(init!.body as string).apply);
+    expect(rebalanceCalls()).toEqual([false]); // only a preview so far
+    expect(screen.getByRole("heading", { name: "A full day" })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Rearrange" }));
+    await screen.findByText("Done. Your days now fit.");
+    await userEvent.click(screen.getByRole("button", { name: "Close" }));
+
+    expect(rebalanceCalls()).toEqual([false, true]);
+    // Today loaded again: the day fits now, so the full-day notice is gone.
+    await waitFor(() =>
+      expect(screen.queryByRole("heading", { name: "A full day" })).not.toBeInTheDocument(),
+    );
   });
 
   it("undoes 'Move it' by restoring the previous date", async () => {

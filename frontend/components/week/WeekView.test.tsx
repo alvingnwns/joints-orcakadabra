@@ -2,6 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { LocaleProvider } from "@/components/LocaleProvider";
 import { WorkspaceProvider } from "@/components/WorkspaceProvider";
 import type { DayLoad, ScheduledTask, WeekSchedule } from "@/lib/schedule";
 import { localDate } from "@/lib/tasks";
@@ -80,6 +81,46 @@ describe("loadLabel", () => {
 describe("WeekView", () => {
   beforeEach(() => localStorage.clear());
   afterEach(() => vi.unstubAllGlobals());
+
+  it("offers to rearrange the days when one holds more than the daily time", async () => {
+    fakeBackend([
+      week({ 1: bucket(localDate(1), [scheduled("a", "Big")], 300, true) }),
+    ]);
+    renderView();
+
+    expect(await screen.findByText("Some days have more planned than fits in 4 h.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Rearrange my days" })).toBeInTheDocument();
+  });
+
+  it("does not offer it for a day that is exactly full, or only 'busy'", async () => {
+    fakeBackend([
+      week({
+        0: bucket(localDate(0), [scheduled("a", "Exactly")], 240, false),
+        1: bucket(localDate(1), [scheduled("b", "Busy")], 200, false),
+      }),
+    ]);
+    renderView();
+
+    await screen.findByText("Exactly");
+    expect(screen.queryByRole("button", { name: "Rearrange my days" })).not.toBeInTheDocument();
+  });
+
+  it("offers it in Indonesian too", async () => {
+    localStorage.setItem("orca.locale", "id");
+    fakeBackend([week({ 2: bucket(localDate(2), [scheduled("a", "Besar")], 400, true) })]);
+    render(
+      <LocaleProvider>
+        <WorkspaceProvider>
+          <WeekView />
+        </WorkspaceProvider>
+      </LocaleProvider>,
+    );
+
+    expect(
+      await screen.findByText("Beberapa hari punya rencana lebih banyak dari yang muat dalam 4 j."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Atur ulang hariku" })).toBeInTheDocument();
+  });
 
   it("shows an open week when nothing is planned, and asks for the user's local date", async () => {
     const fetchMock = fakeBackend([week()]);

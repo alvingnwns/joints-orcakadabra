@@ -6,14 +6,17 @@ import { useCallback, useState } from "react";
 import { LoadError, LoadingSkeleton } from "@/components/LoadStates";
 import { useLocale } from "@/components/LocaleProvider";
 import { QuickAddForm } from "@/components/tasks/QuickAddForm";
+import { RebalanceButton } from "@/components/tasks/RebalanceButton";
 import { TaskItem } from "@/components/tasks/TaskItem";
 import { TaskFeedback, useTaskActions } from "@/components/tasks/useTaskActions";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Notice } from "@/components/ui/Notice";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { useLoad } from "@/components/useLoad";
 import { DayColumn } from "@/components/week/DayColumn";
 import { useSettingsVersion, useWorkspace } from "@/components/WorkspaceProvider";
-import { formatDate } from "@/lib/i18n";
+import { fill, formatDate } from "@/lib/i18n";
+import { formatDuration } from "@/lib/load";
 import { type ScheduledTask, type WeekSchedule, getWeek } from "@/lib/schedule";
 import { type NewTask, createTask, localDate } from "@/lib/tasks";
 
@@ -53,6 +56,7 @@ export function WeekView() {
           selected={selected}
           onSelect={setSelected}
           onAdd={handleAdd}
+          onRebalanced={refresh}
           handlers={handlers}
         />
       )}
@@ -65,18 +69,27 @@ type ContentProps = {
   selected: number;
   onSelect: (index: number) => void;
   onAdd: (task: NewTask) => Promise<void>;
+  onRebalanced: () => void;
   handlers: Handlers;
 };
 
-function WeekContent({ week, selected, onSelect, onAdd, handlers }: ContentProps) {
+function WeekContent({ week, selected, onSelect, onAdd, onRebalanced, handlers }: ContentProps) {
   const { t, locale } = useLocale();
   const isEmpty =
     week.unscheduled.task_count === 0 && week.days.every((day) => day.task_count === 0);
   const day = week.days[selected];
+  // Strictly more than the person's daily time (a day that is exactly full is fine).
+  const hasOverfullDay = week.days.some((item) => item.total_minutes > week.capacity_minutes);
 
   return (
     <>
       {isEmpty && <EmptyState illustration="week-empty" text={t("weekEmpty")} />}
+
+      {hasOverfullDay && (
+        <Notice tone="attention" action={<RebalanceButton onDone={onRebalanced} />}>
+          {fill(t("weekOverNotice"), { capacity: formatDuration(week.capacity_minutes, t) })}
+        </Notice>
+      )}
 
       <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-7">
         {week.days.map((item, index) => (

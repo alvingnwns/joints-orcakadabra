@@ -18,6 +18,11 @@ from app.schemas import (
     EstimateRequest,
     HeavyLoadOut,
     ParseRequest,
+    RebalanceMoveOut,
+    RebalanceOut,
+    RebalancePartOut,
+    RebalanceRequest,
+    RebalanceSplitOut,
     ScheduledTaskOut,
     TaskCreate,
     TaskOut,
@@ -29,6 +34,7 @@ from app.services.estimate import estimate_task
 from app.services.llm import LLMClient, LLMInvalidOutput, LLMUnavailable, get_llm
 from app.services.parse import Draft, parse_brain_dump
 from app.services.priority import compute_priority
+from app.services.rebalance import plan_rebalance
 from app.services.schedule import ACTIVE_STATUSES, Bucket, ScoredTask, build_today, build_week
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
@@ -146,6 +152,68 @@ def create_tasks_bulk(body: BulkCreate, db: DbSession, workspace: CurrentWorkspa
     for task in tasks:
         db.refresh(task)
     return tasks
+
+
+@router.post("/rebalance", response_model=RebalanceOut)
+def rebalance(body: RebalanceRequest, db: DbSession, workspace: CurrentWorkspace) -> RebalanceOut:
+    """Spreads overfull days out, and splits tasks longer than a whole day (see services/rebalance).
+
+    With apply=false nothing changes: the response only shows what would happen.
+    """
+    capacity = workspace.daily_capacity_minutes
+    plan = plan_rebalance(_active_tasks(db, workspace), body.today, capacity)
+    # Described before anything changes, so it shows each task's original title and dates.
+    result = RebalanceOut(
+        applied=body.apply and not plan.is_empty,
+        capacity_minutes=capacity,
+        moves=[
+            RebalanceMoveOut(
+                task_id=move.task.id,
+                title=move.task.title,
+                from_date=move.from_date,
+                to_date=move.to_date,
+            )
+            for move in plan.moves
+        ],
+        splits=[
+            RebalanceSplitOut(
+                task_id=split.task.id,
+                title=split.task.title,
+                total_minutes=split.total_minutes,
+                parts=[
+                    RebalancePartOut(title=part.title, date=part.day, minutes=part.minutes)
+                    for part in split.parts
+                ],
+            )
+            for split in plan.splits
+        ],
+    )
+
+    if body.apply and not plan.is_empty:
+        for move in plan.moves:
+            move.task.due_date = move.to_date
+            _apply_priority(move.task)
+        for split in plan.splits:
+            original, first = split.task, split.parts[0]
+            for part in split.parts[1:]:
+                extra = Task(
+                    workspace_id=workspace.id,
+                    title=part.title,
+                    description=original.description,
+                    due_date=part.day,
+                    estimated_minutes=part.minutes,
+                    impact_score=original.impact_score,
+                    status=TaskStatus.TODO,
+                    source_type=original.source_type,
+                )
+                _apply_priority(extra)
+                db.add(extra)
+            original.title, original.due_date = first.title, first.day
+            original.estimated_minutes = first.minutes
+            _apply_priority(original)
+        db.commit()
+
+    return result
 
 
 @router.get("", response_model=list[TaskOut])

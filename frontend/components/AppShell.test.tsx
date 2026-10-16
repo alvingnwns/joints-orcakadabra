@@ -86,6 +86,40 @@ describe("AppShell navigation", () => {
     ]);
   });
 
+  it("makes Brain dump the one filled button, last in the nav, and keeps the others plain", () => {
+    renderShell();
+
+    const nav = screen.getByRole("navigation", { name: "Main" });
+    const links = within(nav).getAllByRole("link");
+    expect(links.map((link) => link.textContent)).toEqual([
+      "Today",
+      "Week",
+      "All tasks",
+      "Brain dump",
+    ]);
+
+    const [today, week, tasks, dump] = links;
+    expect(dump.className).toContain("bg-primary");
+    expect(dump.className).toContain("text-on-primary");
+    expect(dump.closest("li")!.className).toContain("lg:ml-auto"); // set apart on wide screens
+    for (const plain of [today, week, tasks]) {
+      expect(plain.className).not.toContain("bg-primary ");
+      expect(plain.className).not.toContain("text-on-primary");
+    }
+  });
+
+  it("still marks Brain dump as the current page when you are on it", () => {
+    mockPath = "/dump";
+
+    renderShell();
+
+    const dump = within(screen.getByRole("navigation", { name: "Main" })).getByRole("link", {
+      name: "Brain dump",
+    });
+    expect(dump).toHaveAttribute("aria-current", "page");
+    expect(dump.className).toContain("ring-2"); // a visible 'you are here' on the filled button
+  });
+
   it("is called PikoPlan, with the tagline 'Your day, your way'", () => {
     renderShell();
 
